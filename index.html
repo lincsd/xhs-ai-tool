@@ -209,6 +209,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hira
 .note-gen-footer .ai-btn{font-size:14px}
 .note-slide-label{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.5);color:#fff;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:500}
 @media(max-width:600px){.note-gen-modal{width:96%;border-radius:14px}.note-gen-body{padding:16px;gap:12px}}
+/* API Key bar */
+.api-key-bar{display:flex;gap:8px;align-items:center;padding:12px 0;margin-bottom:12px;border-bottom:1px solid var(--border)}
+.api-key-bar input{flex:1;padding:8px 14px;border:2px solid var(--border);border-radius:10px;font-size:13px;font-family:monospace;outline:none;transition:.2s;letter-spacing:1px}
+.api-key-bar input:focus{border-color:#4285f4}
+.api-key-bar .key-save-btn{padding:8px 16px;border-radius:10px;border:none;background:#4285f4;color:#fff;font-size:13px;font-weight:600;cursor:pointer;transition:.2s;white-space:nowrap}
+.api-key-bar .key-save-btn:hover{background:#3367d6}
+.api-key-bar .key-status{font-size:12px;padding:4px 10px;border-radius:10px;white-space:nowrap}
+.key-ok{background:#e8f5e9;color:#2e7d32}
+.key-no{background:#fce4ec;color:#c62828}
+.key-tip{font-size:12px;color:var(--text3);line-height:1.6;margin-bottom:8px}
+.key-tip a{color:#4285f4;text-decoration:none}
+.key-tip a:hover{text-decoration:underline}
 </style>
 </head>
 <body>
@@ -233,6 +245,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hira
       <span class="toggle-icon" id="aiToggleIcon">▼</span>
     </div>
     <div class="ai-panel-body" id="aiPanelBody">
+      <!-- API Key 配置 -->
+      <div class="key-tip">🔑 AI 功能需要 Gemini API Key（免费）· <a href="https://aistudio.google.com/apikey" target="_blank">点此获取 →</a> · Key 仅保存在你的浏览器中，不会上传</div>
+      <div class="api-key-bar">
+        <input type="password" id="apiKeyInput" placeholder="粘贴你的 Gemini API Key..." />
+        <button class="key-save-btn" onclick="saveApiKey()">💾 保存</button>
+        <button class="key-save-btn" onclick="toggleKeyVisible()" style="background:#6c757d;padding:8px 10px" title="显示/隐藏Key">👁️</button>
+        <span class="key-status" id="keyStatus"></span>
+      </div>
       <!-- AI Tabs -->
       <div class="ai-tabs">
         <div class="ai-tab" onclick="switchAITab('profile')">🧑‍💼 账号包装</div>
@@ -2173,10 +2193,53 @@ const GEN_TYPE_PROMPTS = {
   trend: '热点结合型笔记：结合当前小红书平台热点话题，自然融入工具推广'
 };
 
-// ===== API 调用 =====
+// ===== API Key 管理（localStorage 安全存储）=====
 
-const _BUILTIN_KEY = 'AIzaSyCFy3xechHDvidocQZjzm99nEhVUfwJUMI';
-function getApiKey() { return _BUILTIN_KEY; }
+function _encK(k) { try { return btoa(k.split('').reverse().join('')) } catch(e) { return '' } }
+function _decK(s) { try { return atob(s).split('').reverse().join('') } catch(e) { return '' } }
+
+function getApiKey() {
+  const stored = localStorage.getItem('_gk_');
+  if (stored) return _decK(stored);
+  return '';
+}
+
+function saveApiKey() {
+  const input = document.getElementById('apiKeyInput');
+  const key = input.value.trim();
+  if (!key) { showToast('❌ 请输入 API Key'); return; }
+  if (!key.startsWith('AIza')) { showToast('⚠️ Key 格式不对，应以 AIza 开头'); return; }
+  localStorage.setItem('_gk_', _encK(key));
+  input.value = key;
+  _updateKeyStatus();
+  showToast('✅ API Key 已安全保存到浏览器');
+}
+
+function _updateKeyStatus() {
+  const key = getApiKey();
+  const el = document.getElementById('keyStatus');
+  const input = document.getElementById('apiKeyInput');
+  if (key) {
+    el.className = 'key-status key-ok';
+    el.textContent = '✅ 已配置';
+    if (!input.value) input.value = key;
+  } else {
+    el.className = 'key-status key-no';
+    el.textContent = '❌ 未配置';
+  }
+}
+
+function toggleKeyVisible() {
+  const input = document.getElementById('apiKeyInput');
+  input.type = input.type === 'password' ? 'text' : 'password';
+}
+
+// 页面加载时恢复 Key
+setTimeout(() => {
+  const key = getApiKey();
+  if (key) document.getElementById('apiKeyInput').value = key;
+  _updateKeyStatus();
+}, 100);
 
 async function callGemini(prompt, useSearch = true) {
   const key = getApiKey();
