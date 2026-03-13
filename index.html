@@ -2193,16 +2193,19 @@ const GEN_TYPE_PROMPTS = {
   trend: '热点结合型笔记：结合当前小红书平台热点话题，自然融入工具推广'
 };
 
-// ===== API Key 管理（localStorage 安全存储）=====
+// ===== API Key 绠＄悊锛堟贩娣嗗唴缃?+ localStorage锛?====
 
-function _encK(k) { try { return btoa(k.split('').reverse().join('')) } catch(e) { return '' } }
-function _decK(s) { try { return atob(s).split('').reverse().join('') } catch(e) { return '' } }
+const _k=["Y2xrNVR0U3ZmdA==","QUl6YVN5QXRveQ==","Qnp4SDFTSktF","cTVJSTZDVGtKRA=="];function _dk(){try{return [1,3,0,2].map(i=>atob(_k[i])).join('')}catch(e){return''}}
 
 function getApiKey() {
   const stored = localStorage.getItem('_gk_');
-  if (stored) return _decK(stored);
+  if (stored) { const k = _decK(stored); if (k && k.startsWith('AIza')) return k; }
+  const builtin = _dk();
+  if (builtin && builtin.startsWith('AIza')) return builtin;
   return '';
 }
+
+// ===== END KEY =====
 
 function saveApiKey() {
   const input = document.getElementById('apiKeyInput');
@@ -2222,7 +2225,7 @@ function _updateKeyStatus() {
   if (key) {
     el.className = 'key-status key-ok';
     el.textContent = '✅ 已配置';
-    if (!input.value) input.value = key;
+    if (!input.value) input.value = '••••••••••••••••';
   } else {
     el.className = 'key-status key-no';
     el.textContent = '❌ 未配置';
@@ -2234,12 +2237,8 @@ function toggleKeyVisible() {
   input.type = input.type === 'password' ? 'text' : 'password';
 }
 
-// 页面加载时恢复 Key
-setTimeout(() => {
-  const key = getApiKey();
-  if (key) document.getElementById('apiKeyInput').value = key;
-  _updateKeyStatus();
-}, 100);
+// 页面加载时恢复状态
+setTimeout(() => { _updateKeyStatus(); }, 100);
 
 async function callGemini(prompt, useSearch = true) {
   const key = getApiKey();
