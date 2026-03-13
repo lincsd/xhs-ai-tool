@@ -181,9 +181,51 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hira
 .prompt-chip:hover{border-color:#4285f4;background:#d2e3fc}
 /* Override indicator */
 .ai-override-badge{display:inline-block;background:#fff3e0;color:#e65100;padding:2px 8px;border-radius:8px;font-size:11px;margin-left:8px}
+/* Login Overlay */
+#loginOverlay{position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);z-index:99999;display:flex;align-items:center;justify-content:center;font-family:inherit}
+#loginOverlay.hidden{display:none}
+.login-box{background:#fff;border-radius:24px;padding:48px 40px;width:420px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center;animation:loginSlide .5s ease}
+@keyframes loginSlide{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+.login-logo{font-size:48px;margin-bottom:8px}
+.login-title{font-size:22px;font-weight:700;color:#333;margin-bottom:4px}
+.login-subtitle{font-size:13px;color:#999;margin-bottom:28px}
+.login-input{width:100%;padding:14px 18px;border:2px solid #e8e8e8;border-radius:12px;font-size:16px;outline:none;transition:.2s;text-align:center;letter-spacing:3px;font-family:monospace;font-weight:600}
+.login-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(255,36,66,.1)}
+.login-input.shake{animation:loginShake .4s}
+@keyframes loginShake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.login-btn{width:100%;padding:14px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--primary),#ff6b81);color:#fff;font-size:16px;font-weight:600;cursor:pointer;margin-top:16px;transition:.2s}
+.login-btn:hover{opacity:.9;transform:translateY(-1px)}
+.login-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.login-error{color:#e74c3c;font-size:13px;margin-top:12px;min-height:20px}
+.login-footer{margin-top:24px;font-size:12px;color:#bbb}
+.login-footer a{color:var(--primary);text-decoration:none}
+.login-user-bar{position:fixed;top:12px;right:16px;z-index:9999;background:#fff;border-radius:20px;padding:6px 16px;box-shadow:0 2px 12px rgba(0,0,0,.1);font-size:13px;display:flex;align-items:center;gap:8px}
+.login-user-bar .user-name{color:#333;font-weight:600}
+.login-user-bar .logout-btn{color:var(--primary);cursor:pointer;border:none;background:none;font-size:12px;padding:2px 8px;border-radius:8px;transition:.2s}
+.login-user-bar .logout-btn:hover{background:var(--primary-light)}
 </style>
 </head>
 <body>
+<!-- 登录遮罩 -->
+<div id="loginOverlay">
+  <div class="login-box">
+    <div class="login-logo">🔐</div>
+    <div class="login-title">小红书AI运营工具</div>
+    <div class="login-subtitle">请输入您的专属邀请码进入系统</div>
+    <input class="login-input" id="inviteCodeInput" type="text" placeholder="请输入邀请码" maxlength="16" autocomplete="off" />
+    <button class="login-btn" id="loginBtn" onclick="verifyInviteCode()">🚀 立即进入</button>
+    <div class="login-error" id="loginError"></div>
+    <div class="login-footer">还没有邀请码？请联系卖家获取 · <a href="#" onclick="return false">了解更多</a></div>
+  </div>
+</div>
+
+<!-- 用户栏 -->
+<div class="login-user-bar" id="userBar" style="display:none">
+  <span>👤</span>
+  <span class="user-name" id="userName"></span>
+  <button class="logout-btn" onclick="logoutUser()">退出登录</button>
+</div>
+
 <div class="app" id="app">
   <div class="header">
     <h1>📅 小红书推广 · 每日发布内容</h1>
@@ -446,6 +488,132 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hira
 <div class="toast" id="toast"></div>
 
 <script>
+// ===== 邀请码登录系统 =====
+// 邀请码表（SHA-256 哈希 + 显示名）
+// 管理员用 generateInviteCodes() 在控制台生成新码
+const INVITE_CODES = [
+  { hash:'2d4087d1634646d155f92cba86557b2ec4b9ccaaf0e94d22856fd25b462ed994', name:'体验用户', expires:'2027-12-31' },
+  { hash:'bedacc915d763c62146eaf1c578c835032e22e7d4e6ba372993ec35c0590e188', name:'黄金客户', expires:'2027-12-31' },
+  { hash:'cd897dbbc99a5b30e21e5dce0217bf007ebad80396e3f3fd63f0dd83b4ca1ecf', name:'客户A', expires:'2027-12-31' },
+  { hash:'a2b128764c9f04a3dcf5f08ba52b7138555214bd005cf36aa766694a73c900bd', name:'客户B', expires:'2027-12-31' },
+  { hash:'3bd89a2369204c0b42984ffb00cd0e035825e4d9b5f6ee7325048c6764d84668', name:'客户C', expires:'2027-12-31' },
+  { hash:'91bf78a42108e7d645de8ea1d6b64ac2268f05ea9cf18b1f009aa7dc67e78e75', name:'客户D', expires:'2027-12-31' },
+  { hash:'cd3fb6afa3a1504469c92b16775c42c7538e4945fe7ff052d904ff74299313a4', name:'客户E', expires:'2027-12-31' },
+  { hash:'13e02c95e15720fbfdbc27ac7d3c6282289418f32ca6cf36b144df25988f456a', name:'客户F', expires:'2027-12-31' },
+  { hash:'469f0e7357b689c11c53a312a3bbfe35f1e32e23562b3b224da3c6db5c2733a4', name:'客户G', expires:'2027-12-31' },
+  { hash:'135cd9af55b6cccea18dc3fcefae93fd0ecf38537c6d0544a405b6f23d9fd713', name:'客户H', expires:'2027-12-31' },
+  { hash:'246e8e1da0c3989b3601ebc4d64742732cbe14f0331d26f27517a047a20aa2dc', name:'客户I', expires:'2027-12-31' },
+  { hash:'c43a08e2ef7dd07ae338b67d5089ad673c2d971330899fc233b6c2e29bef386d', name:'客户J', expires:'2027-12-31' },
+  { hash:'7fb4de0d0c319872c817fe3e000d2ca18b8242f9d2aeb178a839d681f9cdb3f1', name:'VIP客户1', expires:'2027-12-31' },
+  { hash:'8eaa4e115cfcf2d4bd7144756ca82a236aff8f532e89de6e4762965878fc2760', name:'VIP客户2', expires:'2027-12-31' },
+  { hash:'8353384bd8c40c7db4e565b88259a07b1b76645b42e496dfd0220631fe5ff118', name:'VIP客户3', expires:'2027-12-31' },
+  { hash:'68f5ea3162cc45f31e10246aae13c6a6613fe3c93fa743b7fe5d0ba2e27a9bd0', name:'管理员', expires:'2099-12-31' },
+];
+
+// SHA-256 哈希函数
+async function sha256(text) {
+  const data = new TextEncoder().encode(text.trim().toLowerCase());
+  const buf = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+// 检查是否已登录
+function checkLogin() {
+  const session = sessionStorage.getItem('xhs_auth');
+  if (session) {
+    try {
+      const data = JSON.parse(session);
+      if (data.name && data.time && (Date.now() - data.time < 24*60*60*1000)) {
+        showLoggedIn(data.name);
+        return true;
+      }
+    } catch(e) {}
+  }
+  showLoginOverlay();
+  return false;
+}
+
+function showLoginOverlay() {
+  document.getElementById('loginOverlay').classList.remove('hidden');
+  document.getElementById('app').style.filter = 'blur(20px)';
+  document.getElementById('app').style.pointerEvents = 'none';
+  document.getElementById('userBar').style.display = 'none';
+  setTimeout(() => document.getElementById('inviteCodeInput')?.focus(), 300);
+}
+
+function showLoggedIn(name) {
+  document.getElementById('loginOverlay').classList.add('hidden');
+  document.getElementById('app').style.filter = '';
+  document.getElementById('app').style.pointerEvents = '';
+  document.getElementById('userName').textContent = name;
+  document.getElementById('userBar').style.display = 'flex';
+}
+
+async function verifyInviteCode() {
+  const input = document.getElementById('inviteCodeInput');
+  const errorEl = document.getElementById('loginError');
+  const btn = document.getElementById('loginBtn');
+  const code = input.value.trim();
+
+  if (!code) { errorEl.textContent = '请输入邀请码'; input.classList.add('shake'); setTimeout(()=>input.classList.remove('shake'),400); return; }
+
+  btn.disabled = true;
+  btn.textContent = '✨ 验证中...';
+  errorEl.textContent = '';
+
+  try {
+    const hash = await sha256(code);
+    const found = INVITE_CODES.find(c => c.hash === hash);
+
+    if (found) {
+      // 检查过期
+      if (found.expires && new Date(found.expires) < new Date()) {
+        errorEl.textContent = '❌ 该邀请码已过期，请联系卖家获取新码';
+        btn.disabled = false; btn.textContent = '🚀 立即进入'; return;
+      }
+      // 登录成功
+      sessionStorage.setItem('xhs_auth', JSON.stringify({ name: found.name, time: Date.now() }));
+      showLoggedIn(found.name);
+    } else {
+      errorEl.textContent = '❌ 邀请码无效，请检查后重试';
+      input.classList.add('shake');
+      setTimeout(() => input.classList.remove('shake'), 400);
+    }
+  } catch(e) {
+    errorEl.textContent = '验证失败，请重试';
+  }
+  btn.disabled = false;
+  btn.textContent = '🚀 立即进入';
+}
+
+function logoutUser() {
+  sessionStorage.removeItem('xhs_auth');
+  showLoginOverlay();
+}
+
+// 管理员工具：在浏览器控制台运行 generateInviteCodes() 来生成新邀请码
+window.generateInviteCodes = async function(count = 5, prefix = 'XHS') {
+  const codes = [];
+  for (let i = 0; i < count; i++) {
+    const raw = prefix + '-' + Math.random().toString(36).substring(2,6).toUpperCase() + '-' + Math.random().toString(36).substring(2,6).toUpperCase();
+    const hash = await sha256(raw);
+    codes.push({ plain: raw, hash, name: `客户${i+1}`, expires: '2027-12-31' });
+  }
+  console.log('%c=== 邀请码列表（发给客户） ===', 'color:#ff2442;font-size:16px;font-weight:bold');
+  codes.forEach(c => console.log(`📌 ${c.name}: ${c.plain}`));
+  console.log('%c=== 哈希列表（复制到代码中） ===', 'color:#4285f4;font-size:14px');
+  codes.forEach(c => console.log(`  { hash:'${c.hash}', name:'${c.name}', expires:'${c.expires}' },`));
+  console.table(codes.map(c => ({ 邀请码: c.plain, 哈希: c.hash.slice(0,16)+'...', 名称: c.name })));
+  return codes;
+};
+
+// Enter 键登录
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !document.getElementById('loginOverlay').classList.contains('hidden')) verifyInviteCode();
+});
+
+// 页面加载时检查登录
+checkLogin();
 // ===== AI生图（nano banana） =====
 async function genImages() {
   const prompts = document.getElementById('imgPrompt').value.trim().split(/\n+/).filter(Boolean);
