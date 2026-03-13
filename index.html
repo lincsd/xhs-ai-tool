@@ -181,6 +181,34 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hira
 .prompt-chip:hover{border-color:#4285f4;background:#d2e3fc}
 /* Override indicator */
 .ai-override-badge{display:inline-block;background:#fff3e0;color:#e65100;padding:2px 8px;border-radius:8px;font-size:11px;margin-left:8px}
+
+/* ===== 图文笔记生成器 ===== */
+.note-gen-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:1000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.note-gen-overlay.show{display:flex}
+.note-gen-modal{background:#fff;border-radius:20px;width:90%;max-width:960px;max-height:90vh;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3);display:flex;flex-direction:column}
+.note-gen-header{background:linear-gradient(135deg,var(--primary),#ff6b81);color:#fff;padding:20px 28px;display:flex;justify-content:space-between;align-items:center}
+.note-gen-header h2{font-size:20px;display:flex;align-items:center;gap:8px}
+.note-gen-close{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s}
+.note-gen-close:hover{background:rgba(255,255,255,.4)}
+.note-gen-toolbar{padding:16px 28px;border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:#fafafa}
+.note-gen-toolbar label{font-size:13px;font-weight:600;color:var(--text2);margin-right:4px}
+.style-chip{padding:6px 16px;border-radius:20px;border:2px solid var(--border);background:#fff;cursor:pointer;font-size:13px;font-weight:500;transition:.2s}
+.style-chip:hover{border-color:var(--primary);color:var(--primary)}
+.style-chip.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.note-gen-body{flex:1;overflow-y:auto;padding:28px;display:flex;flex-wrap:wrap;gap:20px;justify-content:center;background:#f5f6fa}
+.note-gen-body::-webkit-scrollbar{width:6px}
+.note-gen-body::-webkit-scrollbar-thumb{background:#ddd;border-radius:3px}
+.note-slide{position:relative;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.12);transition:transform .2s}
+.note-slide:hover{transform:translateY(-4px)}
+.note-slide canvas{display:block}
+.note-slide-actions{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.7));padding:12px;display:flex;gap:6px;justify-content:center;opacity:0;transition:.2s}
+.note-slide:hover .note-slide-actions{opacity:1}
+.slide-btn{padding:6px 14px;border-radius:8px;border:none;background:rgba(255,255,255,.9);color:var(--text);font-size:12px;cursor:pointer;font-weight:500;transition:.2s}
+.slide-btn:hover{background:#fff;transform:scale(1.05)}
+.note-gen-footer{padding:16px 28px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:center;align-items:center;background:#fff}
+.note-gen-footer .ai-btn{font-size:14px}
+.note-slide-label{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.5);color:#fff;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:500}
+@media(max-width:600px){.note-gen-modal{width:96%;border-radius:14px}.note-gen-body{padding:16px;gap:12px}}
 </style>
 </head>
 <body>
@@ -444,6 +472,31 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hira
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- ===== 图文笔记生成器弹窗 ===== -->
+<div class="note-gen-overlay" id="noteGenOverlay" onclick="if(event.target===this)closeNoteGen()">
+  <div class="note-gen-modal">
+    <div class="note-gen-header">
+      <h2>📸 图文笔记生成器</h2>
+      <button class="note-gen-close" onclick="closeNoteGen()">✕</button>
+    </div>
+    <div class="note-gen-toolbar">
+      <label>风格：</label>
+      <span class="style-chip active" onclick="switchNoteStyle('xiaohongshu',this)">🌸 小红书</span>
+      <span class="style-chip" onclick="switchNoteStyle('minimalist',this)">✨ 极简文艺</span>
+      <span class="style-chip" onclick="switchNoteStyle('gradient',this)">🎨 渐变大字</span>
+      <span class="style-chip" onclick="switchNoteStyle('warm',this)">☀️ 温暖治愈</span>
+      <span class="style-chip" onclick="switchNoteStyle('dark',this)">🌙 暗黑高级</span>
+      <span class="style-chip" onclick="switchNoteStyle('magazine',this)">📰 杂志排版</span>
+    </div>
+    <div class="note-gen-body" id="noteGenBody"></div>
+    <div class="note-gen-footer">
+      <button class="ai-btn ai-btn-primary" onclick="downloadAllSlides()">💾 下载全部图片</button>
+      <button class="ai-btn ai-btn-secondary" onclick="regenerateNotes()">🔄 重新生成</button>
+      <span style="font-size:12px;color:var(--text3);margin-left:8px">图片尺寸 1080×1440 · 适合直接发布小红书</span>
+    </div>
+  </div>
+</div>
 
 <script>
 // ===== AI生图（nano banana） =====
@@ -1976,6 +2029,7 @@ function renderPost(d) {
     <button class="copy-btn" onclick="copyText('content')">📋 复制正文</button>
     <button class="copy-btn" onclick="copyText('tags')">📋 复制标签</button>
     <button class="copy-btn" onclick="copyText('all')">📋 一键复制全部</button>
+    <button class="copy-btn" onclick="openNoteGen()" style="background:linear-gradient(135deg,var(--primary),#ff6b81);color:#fff;border-color:var(--primary);font-weight:600">📸 生成图文笔记</button>
     <button class="copy-btn" onclick="toggleDone(${d})" id="doneBtn${d}" style="${completedDays.includes(d)?'background:var(--green);color:#fff;border-color:var(--green)':''}">${completedDays.includes(d)?'✅ 已发布':'📤 标记已发布'}</button>
   `;
   
@@ -2677,6 +2731,458 @@ renderPost = function(d) {
 
 // 重新渲染当前
 renderPost(currentDay);
+
+// ===== 图文笔记生成器 =====
+let currentNoteStyle = 'xiaohongshu';
+let noteGenCanvases = [];
+
+const NOTE_STYLES = {
+  xiaohongshu: {
+    name: '小红书', bg: ['#fff0f3','#ffe0e6'], accent: '#ff2442', text: '#333',
+    coverBg: ['#ff2442','#ff6b81'], coverText: '#fff',
+    fontBody: '16px "PingFang SC","Microsoft YaHei",sans-serif',
+    fontTitle: 'bold 36px "PingFang SC","Microsoft YaHei",sans-serif',
+    fontCover: 'bold 56px "PingFang SC","Microsoft YaHei",sans-serif',
+    decoEmoji: ['🌸','✨','💕','🎀','💫'],
+  },
+  minimalist: {
+    name: '极简文艺', bg: ['#fafaf8','#f5f5f0'], accent: '#8b7355', text: '#444',
+    coverBg: ['#f5f0e8','#e8e0d0'], coverText: '#5a4a3a',
+    fontBody: '16px "PingFang SC","Microsoft YaHei",serif',
+    fontTitle: 'bold 34px "PingFang SC","Microsoft YaHei",serif',
+    fontCover: 'bold 52px "PingFang SC","Microsoft YaHei",serif',
+    decoEmoji: ['🍃','🕊️','☁️','🤍','✨'],
+  },
+  gradient: {
+    name: '渐变大字', bg: ['#667eea','#764ba2'], accent: '#fff', text: '#fff',
+    coverBg: ['#f093fb','#f5576c'], coverText: '#fff',
+    fontBody: '16px "PingFang SC","Microsoft YaHei",sans-serif',
+    fontTitle: 'bold 36px "PingFang SC","Microsoft YaHei",sans-serif',
+    fontCover: 'bold 58px "PingFang SC","Microsoft YaHei",sans-serif',
+    decoEmoji: ['💜','💫','🌟','✨','🦋'],
+  },
+  warm: {
+    name: '温暖治愈', bg: ['#ffecd2','#fcb69f'], accent: '#e17055', text: '#5a3e2b',
+    coverBg: ['#fdcb6e','#f39c12'], coverText: '#5a3e2b',
+    fontBody: '16px "PingFang SC","Microsoft YaHei",sans-serif',
+    fontTitle: 'bold 34px "PingFang SC","Microsoft YaHei",sans-serif',
+    fontCover: 'bold 54px "PingFang SC","Microsoft YaHei",sans-serif',
+    decoEmoji: ['☀️','🌻','🧡','🍂','🌈'],
+  },
+  dark: {
+    name: '暗黑高级', bg: ['#1a1a2e','#16213e'], accent: '#e94560', text: '#eee',
+    coverBg: ['#0f3460','#533483'], coverText: '#fff',
+    fontBody: '16px "PingFang SC","Microsoft YaHei",sans-serif',
+    fontTitle: 'bold 36px "PingFang SC","Microsoft YaHei",sans-serif',
+    fontCover: 'bold 56px "PingFang SC","Microsoft YaHei",sans-serif',
+    decoEmoji: ['🖤','⚡','🌙','💀','🔥'],
+  },
+  magazine: {
+    name: '杂志排版', bg: ['#fff','#f8f8f8'], accent: '#222', text: '#333',
+    coverBg: ['#222','#444'], coverText: '#fff',
+    fontBody: '15px "PingFang SC","Microsoft YaHei",serif',
+    fontTitle: 'bold 32px "PingFang SC","Microsoft YaHei",serif',
+    fontCover: 'bold 50px "PingFang SC","Microsoft YaHei",serif',
+    decoEmoji: ['📰','✦','◆','▪','—'],
+  },
+};
+
+function openNoteGen() {
+  document.getElementById('noteGenOverlay').classList.add('show');
+  generateNoteSlides();
+}
+
+function closeNoteGen() {
+  document.getElementById('noteGenOverlay').classList.remove('show');
+}
+
+function switchNoteStyle(style, el) {
+  currentNoteStyle = style;
+  document.querySelectorAll('.style-chip').forEach(c => c.classList.remove('active'));
+  if (el) el.classList.add('active');
+  generateNoteSlides();
+}
+
+function regenerateNotes() {
+  generateNoteSlides();
+  showToast('✅ 已重新生成图文笔记');
+}
+
+function generateNoteSlides() {
+  const p = POSTS[currentDay - 1];
+  const ov = aiOverrides[currentDay];
+  const cover = (ov && ov.cover) || p.cover;
+  const title = (ov && ov.title) || p.title;
+  const content = (ov && ov.content) || p.content;
+  const tags = (ov && ov.tags) || p.tags;
+  const style = NOTE_STYLES[currentNoteStyle];
+  const W = 1080, H = 1440;
+
+  noteGenCanvases = [];
+  const container = document.getElementById('noteGenBody');
+  container.innerHTML = '';
+
+  // --- Slide 1: Cover ---
+  const cvsCover = _createSlide(W, H);
+  _drawCover(cvsCover, cover, style, W, H);
+  _addSlideToDOM(container, cvsCover, '封面图', 0);
+  noteGenCanvases.push(cvsCover);
+
+  // --- Slide 2: Title + opening ---
+  const cvsTitle = _createSlide(W, H);
+  _drawTitleSlide(cvsTitle, title, content, tags, style, W, H);
+  _addSlideToDOM(container, cvsTitle, '标题页', 1);
+  noteGenCanvases.push(cvsTitle);
+
+  // --- Slide 3+: Content pages ---
+  const contentLines = _splitContent(content, W, H, style);
+  contentLines.forEach((chunk, i) => {
+    const cvs = _createSlide(W, H);
+    _drawContentSlide(cvs, chunk, i + 1, contentLines.length, style, W, H);
+    _addSlideToDOM(container, cvs, `内容页 ${i + 1}`, noteGenCanvases.length);
+    noteGenCanvases.push(cvs);
+  });
+
+  // --- Last Slide: Tags + CTA ---
+  const cvsTags = _createSlide(W, H);
+  _drawTagsSlide(cvsTags, tags, style, W, H);
+  _addSlideToDOM(container, cvsTags, '标签页', noteGenCanvases.length);
+  noteGenCanvases.push(cvsTags);
+}
+
+function _createSlide(w, h) {
+  const cvs = document.createElement('canvas');
+  cvs.width = w; cvs.height = h;
+  return cvs;
+}
+
+function _addSlideToDOM(container, canvas, label, idx) {
+  const div = document.createElement('div');
+  div.className = 'note-slide';
+  // Scale canvas for display
+  const displayCanvas = document.createElement('canvas');
+  const scale = 280 / canvas.width;
+  displayCanvas.width = 280;
+  displayCanvas.height = canvas.height * scale;
+  displayCanvas.style.width = '280px';
+  displayCanvas.style.height = (canvas.height * scale) + 'px';
+  const dCtx = displayCanvas.getContext('2d');
+  dCtx.drawImage(canvas, 0, 0, displayCanvas.width, displayCanvas.height);
+  div.appendChild(displayCanvas);
+  div.innerHTML += `<span class="note-slide-label">${label}</span>
+    <div class="note-slide-actions">
+      <button class="slide-btn" onclick="downloadSlide(${idx})">💾 下载</button>
+      <button class="slide-btn" onclick="copySlide(${idx})">📋 复制</button>
+    </div>`;
+  container.appendChild(div);
+}
+
+// --- Drawing helpers ---
+function _drawGradientBg(ctx, colors, w, h) {
+  const grd = ctx.createLinearGradient(0, 0, w * 0.3, h);
+  grd.addColorStop(0, colors[0]);
+  grd.addColorStop(1, colors[1]);
+  ctx.fillStyle = grd;
+  ctx.fillRect(0, 0, w, h);
+}
+
+function _drawDecoCircles(ctx, style, w, h) {
+  ctx.save();
+  ctx.globalAlpha = 0.06;
+  const accent = style.accent;
+  for (let i = 0; i < 5; i++) {
+    ctx.beginPath();
+    const x = Math.random() * w;
+    const y = Math.random() * h;
+    const r = 60 + Math.random() * 200;
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = accent;
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function _drawDecoEmojis(ctx, emojis, w, h) {
+  ctx.save();
+  ctx.globalAlpha = 0.12;
+  ctx.font = '48px serif';
+  for (let i = 0; i < 8; i++) {
+    const emoji = emojis[i % emojis.length];
+    const x = Math.random() * (w - 60) + 30;
+    const y = Math.random() * (h - 60) + 40;
+    ctx.fillText(emoji, x, y);
+  }
+  ctx.restore();
+}
+
+function _wrapText(ctx, text, maxWidth) {
+  const lines = [];
+  const rawLines = text.split('\n');
+  for (const raw of rawLines) {
+    if (raw.trim() === '') { lines.push(''); continue; }
+    let line = '';
+    for (const ch of raw) {
+      const test = line + ch;
+      if (ctx.measureText(test).width > maxWidth && line) {
+        lines.push(line);
+        line = ch;
+      } else {
+        line = test;
+      }
+    }
+    if (line) lines.push(line);
+  }
+  return lines;
+}
+
+function _drawCover(cvs, coverText, style, w, h) {
+  const ctx = cvs.getContext('2d');
+  _drawGradientBg(ctx, style.coverBg, w, h);
+  _drawDecoCircles(ctx, { accent: '#fff' }, w, h);
+  _drawDecoEmojis(ctx, style.decoEmoji, w, h);
+
+  // Main cover text
+  ctx.font = style.fontCover;
+  ctx.fillStyle = style.coverText;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  const maxW = w - 160;
+  const lines = _wrapText(ctx, coverText, maxW);
+  const lineH = 76;
+  const startY = h / 2 - (lines.length - 1) * lineH / 2;
+
+  // Text shadow
+  ctx.shadowColor = 'rgba(0,0,0,0.15)';
+  ctx.shadowBlur = 20;
+  ctx.shadowOffsetY = 4;
+  lines.forEach((line, i) => {
+    ctx.fillText(line, w / 2, startY + i * lineH);
+  });
+  ctx.shadowColor = 'transparent';
+
+  // Bottom decoration line
+  ctx.strokeStyle = style.coverText;
+  ctx.globalAlpha = 0.3;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(w / 2 - 120, h / 2 + lines.length * lineH / 2 + 30);
+  ctx.lineTo(w / 2 + 120, h / 2 + lines.length * lineH / 2 + 30);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+
+  // Watermark
+  ctx.font = '14px sans-serif';
+  ctx.fillStyle = style.coverText;
+  ctx.globalAlpha = 0.4;
+  ctx.fillText('小红书 · AI运营工具', w / 2, h - 50);
+  ctx.globalAlpha = 1;
+}
+
+function _drawTitleSlide(cvs, title, content, tags, style, w, h) {
+  const ctx = cvs.getContext('2d');
+  _drawGradientBg(ctx, style.bg, w, h);
+  _drawDecoCircles(ctx, style, w, h);
+
+  const pad = 80;
+
+  // Top accent bar
+  ctx.fillStyle = style.accent;
+  ctx.fillRect(pad, 100, 6, 60);
+
+  // Title
+  ctx.font = style.fontTitle;
+  ctx.fillStyle = style.text;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  const titleLines = _wrapText(ctx, title, w - pad * 2 - 20);
+  titleLines.forEach((line, i) => {
+    ctx.fillText(line, pad + 20, 100 + i * 50);
+  });
+
+  // Divider
+  const divY = 100 + titleLines.length * 50 + 30;
+  ctx.strokeStyle = style.accent;
+  ctx.globalAlpha = 0.2;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(pad, divY);
+  ctx.lineTo(w - pad, divY);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+
+  // Content preview (first ~600 chars)
+  ctx.font = style.fontBody;
+  ctx.fillStyle = style.text;
+  ctx.globalAlpha = 0.85;
+  const preview = content.substring(0, 600);
+  const bodyLines = _wrapText(ctx, preview, w - pad * 2);
+  const maxLines = Math.min(bodyLines.length, 38);
+  const lineH = 32;
+  bodyLines.slice(0, maxLines).forEach((line, i) => {
+    ctx.fillText(line, pad, divY + 30 + i * lineH);
+  });
+  if (bodyLines.length > maxLines) {
+    ctx.fillStyle = style.accent;
+    ctx.fillText('......', pad, divY + 30 + maxLines * lineH);
+  }
+  ctx.globalAlpha = 1;
+
+  // Bottom tags
+  ctx.font = '14px sans-serif';
+  ctx.fillStyle = style.accent;
+  ctx.globalAlpha = 0.6;
+  const tagStr = tags.slice(0, 5).map(t => '#' + t).join('  ');
+  ctx.fillText(tagStr, pad, h - 60);
+  ctx.globalAlpha = 1;
+}
+
+function _splitContent(content, w, h, style) {
+  const cvs = document.createElement('canvas');
+  cvs.width = w; cvs.height = h;
+  const ctx = cvs.getContext('2d');
+  ctx.font = style.fontBody;
+  const pad = 80;
+  const maxW = w - pad * 2;
+  const lines = _wrapText(ctx, content, maxW);
+  const lineH = 34;
+  const maxLinesPerSlide = Math.floor((h - 240) / lineH);
+  const chunks = [];
+  for (let i = 0; i < lines.length; i += maxLinesPerSlide) {
+    chunks.push(lines.slice(i, i + maxLinesPerSlide));
+  }
+  return chunks;
+}
+
+function _drawContentSlide(cvs, lines, pageNum, totalPages, style, w, h) {
+  const ctx = cvs.getContext('2d');
+  _drawGradientBg(ctx, style.bg, w, h);
+  _drawDecoCircles(ctx, style, w, h);
+
+  const pad = 80;
+  const lineH = 34;
+
+  // Page indicator
+  ctx.font = '13px sans-serif';
+  ctx.fillStyle = style.accent;
+  ctx.globalAlpha = 0.5;
+  ctx.textAlign = 'right';
+  ctx.fillText(`${pageNum} / ${totalPages}`, w - pad, 60);
+  ctx.textAlign = 'left';
+  ctx.globalAlpha = 1;
+
+  // Content
+  ctx.font = style.fontBody;
+  ctx.fillStyle = style.text;
+  lines.forEach((line, i) => {
+    if (line.trim() === '') return;
+    // Highlight lines starting with emoji or special chars
+    const isHighlight = /^[✅❌💡🔥⚡🌟🎯📌📊1-9️⃣]/.test(line.trim());
+    if (isHighlight) {
+      ctx.fillStyle = style.accent;
+      ctx.font = 'bold ' + style.fontBody;
+    } else {
+      ctx.fillStyle = style.text;
+      ctx.font = style.fontBody;
+    }
+    ctx.fillText(line, pad, 100 + i * lineH);
+  });
+
+  // Bottom decoration
+  ctx.font = '14px sans-serif';
+  ctx.fillStyle = style.accent;
+  ctx.globalAlpha = 0.3;
+  ctx.textAlign = 'center';
+  const emoji = style.decoEmoji[pageNum % style.decoEmoji.length];
+  ctx.fillText(emoji + ' ' + emoji + ' ' + emoji, w / 2, h - 50);
+  ctx.globalAlpha = 1;
+  ctx.textAlign = 'left';
+}
+
+function _drawTagsSlide(cvs, tags, style, w, h) {
+  const ctx = cvs.getContext('2d');
+  _drawGradientBg(ctx, style.coverBg, w, h);
+  _drawDecoCircles(ctx, { accent: '#fff' }, w, h);
+  _drawDecoEmojis(ctx, style.decoEmoji, w, h);
+
+  // CTA text
+  ctx.font = 'bold 44px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.fillStyle = style.coverText;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.shadowColor = 'rgba(0,0,0,0.15)';
+  ctx.shadowBlur = 15;
+  ctx.fillText('💬 觉得有用就点赞收藏吧', w / 2, h / 2 - 160);
+  ctx.shadowColor = 'transparent';
+
+  // Tags
+  ctx.font = '28px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.fillStyle = style.coverText;
+  ctx.globalAlpha = 0.85;
+  const tagLines = [];
+  let currentLine = '';
+  tags.forEach(t => {
+    const tag = '#' + t + '  ';
+    if (ctx.measureText(currentLine + tag).width > w - 200) {
+      tagLines.push(currentLine);
+      currentLine = tag;
+    } else {
+      currentLine += tag;
+    }
+  });
+  if (currentLine) tagLines.push(currentLine);
+  tagLines.forEach((line, i) => {
+    ctx.fillText(line, w / 2, h / 2 - 40 + i * 50);
+  });
+  ctx.globalAlpha = 1;
+
+  // Follow CTA
+  ctx.font = 'bold 32px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.fillStyle = style.coverText;
+  ctx.globalAlpha = 0.9;
+  ctx.fillText('👆 关注我 · 获取更多干货', w / 2, h / 2 + 140);
+  ctx.globalAlpha = 1;
+
+  // Watermark
+  ctx.font = '14px sans-serif';
+  ctx.fillStyle = style.coverText;
+  ctx.globalAlpha = 0.4;
+  ctx.fillText('小红书 · AI运营工具', w / 2, h - 50);
+  ctx.globalAlpha = 1;
+}
+
+function downloadSlide(idx) {
+  const cvs = noteGenCanvases[idx];
+  if (!cvs) return;
+  const a = document.createElement('a');
+  a.href = cvs.toDataURL('image/png');
+  a.download = `小红书笔记_Day${currentDay}_${idx + 1}.png`;
+  a.click();
+  showToast('✅ 图片已下载');
+}
+
+function copySlide(idx) {
+  const cvs = noteGenCanvases[idx];
+  if (!cvs) return;
+  cvs.toBlob(blob => {
+    if (!blob) { showToast('❌ 复制失败'); return; }
+    navigator.clipboard.write([
+      new ClipboardItem({ 'image/png': blob })
+    ]).then(() => showToast('✅ 图片已复制到剪贴板')).catch(() => showToast('❌ 浏览器不支持复制图片，请下载'));
+  }, 'image/png');
+}
+
+function downloadAllSlides() {
+  noteGenCanvases.forEach((cvs, i) => {
+    setTimeout(() => {
+      const a = document.createElement('a');
+      a.href = cvs.toDataURL('image/png');
+      a.download = `小红书笔记_Day${currentDay}_${i + 1}.png`;
+      a.click();
+    }, i * 300);
+  });
+  showToast(`✅ 正在下载 ${noteGenCanvases.length} 张图片`);
+}
 
 
 </script>
