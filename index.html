@@ -2193,7 +2193,10 @@ const GEN_TYPE_PROMPTS = {
   trend: '热点结合型笔记：结合当前小红书平台热点话题，自然融入工具推广'
 };
 
-// ===== API Key 绠＄悊锛堟贩娣嗗唴缃?+ localStorage锛?====
+// ===== API Key 管理（混淆内置 + localStorage）=====
+
+function _encK(k) { try { return btoa(k.split('').reverse().join('')) } catch(e) { return '' } }
+function _decK(s) { try { return atob(s).split('').reverse().join('') } catch(e) { return '' } }
 
 const _k=["Y2xrNVR0U3ZmdA==","QUl6YVN5QXRveQ==","Qnp4SDFTSktF","cTVJSTZDVGtKRA=="];function _dk(){try{return [1,3,0,2].map(i=>atob(_k[i])).join('')}catch(e){return''}}
 
