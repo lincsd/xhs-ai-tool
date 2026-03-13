@@ -205,13 +205,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hira
       <span class="toggle-icon" id="aiToggleIcon">▼</span>
     </div>
     <div class="ai-panel-body" id="aiPanelBody">
-      <!-- API Key -->
-      <div class="api-key-row">
-        <input type="text" id="geminiApiKey" placeholder="粘贴 Gemini API Key（或在同目录 gemini_key.txt 中填写）" />
-        <button class="ai-btn ai-btn-secondary" onclick="saveApiKey()" style="padding:10px 16px">保存Key</button>
-        <span class="key-status" id="keyStatus"></span>
-      </div>
-
       <!-- AI Tabs -->
       <div class="ai-tabs">
         <div class="ai-tab" onclick="switchAITab('profile')">🧑‍💼 账号包装</div>
@@ -2128,63 +2121,8 @@ const GEN_TYPE_PROMPTS = {
 
 // ===== API 调用 =====
 
-// 缓存key避免重复读取
-let _cachedApiKey = null;
-function getApiKey() {
-  if (_cachedApiKey !== null && _cachedApiKey !== '') return _cachedApiKey;
-  // 1. 先尝试从本地 gemini_key.txt 读取
-  try {
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', 'gemini_key.txt', false);
-    xhr.send(null);
-    if (xhr.status === 0 || xhr.status === 200) {
-      let line = (xhr.responseText || '').split('\n')[0].trim();
-      if (line.includes('=')) line = line.split('=').slice(1).join('=').trim();
-      if (line && line.length > 10) { _cachedApiKey = line; return line; }
-    }
-  } catch (e) {
-    console.warn('XHR读取gemini_key.txt失败(Chrome file://协议限制)', e);
-  }
-  // 2. 备用：从页面输入框读取（支持手动输入）
-  const inputEl = document.getElementById('geminiApiKey');
-  if (inputEl && inputEl.value && inputEl.value.length > 10 && !inputEl.value.startsWith('*')) {
-    _cachedApiKey = inputEl.value.trim();
-    return _cachedApiKey;
-  }
-  return '';
-}
-
-function saveApiKey() {
-  const inputEl = document.getElementById('geminiApiKey');
-  const val = inputEl?.value?.trim();
-  if (val && val.length > 10 && !val.startsWith('*')) {
-    _cachedApiKey = val;
-    updateKeyStatus();
-    showToast('✅ API Key 已保存（本次会话有效）');
-  } else {
-    showToast('⚠️ 请在输入框粘贴有效的 API Key，或在同目录 gemini_key.txt 中填写');
-  }
-}
-
-function updateKeyStatus() {
-  const key = getApiKey();
-  const el = document.getElementById('keyStatus');
-  const input = document.getElementById('geminiApiKey');
-  if (key) {
-    el.className = 'key-status key-ok';
-    el.textContent = '✅ 已配置';
-    // 如果key来自文件，禁用输入框
-    if (_cachedApiKey && input.value !== _cachedApiKey) {
-      input.value = '************';
-      input.disabled = true;
-    }
-  } else {
-    el.className = 'key-status key-no';
-    el.textContent = '❌ 未配置 - 请粘贴API Key或在gemini_key.txt填写';
-    input.disabled = false;
-    input.value = '';
-  }
-}
+const _BUILTIN_KEY = 'AIzaSyCFy3xechHDvidocQZjzm99nEhVUfwJUMI';
+function getApiKey() { return _BUILTIN_KEY; }
 
 async function callGemini(prompt, useSearch = true) {
   const key = getApiKey();
@@ -2234,7 +2172,7 @@ function toggleAIPanel() {
   const icon = document.getElementById('aiToggleIcon');
   body.classList.toggle('open');
   icon.classList.toggle('open');
-  if (body.classList.contains('open')) updateKeyStatus();
+  // panel opened
 }
 
 function switchAITab(tab) {
@@ -2740,8 +2678,7 @@ renderPost = function(d) {
 // 重新渲染当前
 renderPost(currentDay);
 
-// 初始化 API Key 状态
-setTimeout(updateKeyStatus, 100);
+
 </script>
 </body>
 </html>
