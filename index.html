@@ -1,0 +1,2747 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小红书推广 · 每日发布内容日历</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--primary:#ff2442;--primary-light:#fff0f3;--bg:#f5f6fa;--card:#fff;--text:#333;--text2:#666;--text3:#999;--border:#e8e8e8;--green:#27ae60;--blue:#3498db;--orange:#ff6b35;--purple:#9b59b6;--shadow:0 2px 12px rgba(0,0,0,.08)}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);line-height:1.7}
+.app{max-width:1200px;margin:0 auto;padding:20px}
+/* Header */
+.header{background:linear-gradient(135deg,var(--primary),#ff6b81);color:#fff;border-radius:16px;padding:32px;margin-bottom:24px;position:relative;overflow:hidden}
+.header::after{content:'';position:absolute;right:-40px;top:-40px;width:200px;height:200px;background:rgba(255,255,255,.1);border-radius:50%}
+.header h1{font-size:28px;margin-bottom:8px}
+.header p{opacity:.9;font-size:15px}
+.header .today-badge{display:inline-block;background:rgba(255,255,255,.25);padding:6px 16px;border-radius:20px;margin-top:12px;font-size:14px;backdrop-filter:blur(4px)}
+/* Stats bar */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.stat-card{background:var(--card);border-radius:12px;padding:16px;text-align:center;box-shadow:var(--shadow)}
+.stat-card .num{font-size:28px;font-weight:700;color:var(--primary)}
+.stat-card .label{font-size:13px;color:var(--text3);margin-top:4px}
+/* Calendar strip */
+.calendar-section{margin-bottom:24px}
+.calendar-section h2{font-size:18px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.week-tabs{display:flex;gap:8px;margin-bottom:12px}
+.week-tab{padding:8px 20px;border-radius:20px;border:2px solid var(--border);background:var(--card);cursor:pointer;font-size:14px;font-weight:500;transition:.2s}
+.week-tab:hover{border-color:var(--primary);color:var(--primary)}
+.week-tab.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.day-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.day-btn{padding:12px 8px;border-radius:12px;border:2px solid var(--border);background:var(--card);cursor:pointer;text-align:center;transition:.2s;position:relative}
+.day-btn:hover{border-color:var(--primary);transform:translateY(-2px);box-shadow:var(--shadow)}
+.day-btn.active{border-color:var(--primary);background:var(--primary-light)}
+.day-btn.today{border-color:var(--primary);box-shadow:0 0 0 3px rgba(255,36,66,.2)}
+.day-btn .day-num{font-size:20px;font-weight:700;color:var(--text)}
+.day-btn.active .day-num{color:var(--primary)}
+.day-btn .day-type{font-size:11px;color:var(--text3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.day-btn .today-dot{width:6px;height:6px;background:var(--primary);border-radius:50%;position:absolute;top:6px;right:6px}
+/* Content area */
+.content-area{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start}
+@media(max-width:900px){.content-area{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.day-grid{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:600px){.day-grid{grid-template-columns:repeat(3,1fr)}}
+/* Post card */
+.post-card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+.post-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.post-header .day-info{display:flex;align-items:center;gap:12px}
+.post-header .day-circle{width:48px;height:48px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700}
+.post-header .day-meta h3{font-size:16px}
+.post-header .day-meta span{font-size:13px;color:var(--text3)}
+.post-header .post-time{background:var(--primary-light);color:var(--primary);padding:4px 12px;border-radius:12px;font-size:13px;font-weight:500}
+.post-body{padding:24px}
+.section{margin-bottom:24px}
+.section:last-child{margin-bottom:0}
+.section-title{font-size:14px;font-weight:600;color:var(--primary);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.section-title i{font-style:normal}
+/* Cover text */
+.cover-text{background:linear-gradient(135deg,#fff0f3,#ffeaa7);border-radius:12px;padding:20px;text-align:center;font-size:20px;font-weight:700;color:var(--text);position:relative;border:2px dashed var(--primary);min-height:80px;display:flex;align-items:center;justify-content:center;line-height:1.5}
+/* Title */
+.post-title-text{font-size:17px;font-weight:600;background:var(--primary-light);padding:12px 16px;border-radius:10px;border-left:4px solid var(--primary);position:relative}
+/* Content */
+.post-content{background:#fafafa;border-radius:10px;padding:16px;font-size:14px;line-height:2;white-space:pre-wrap;max-height:500px;overflow-y:auto;border:1px solid var(--border)}
+.post-content::-webkit-scrollbar{width:6px}
+.post-content::-webkit-scrollbar-thumb{background:#ddd;border-radius:3px}
+/* Tags */
+.tags-area{display:flex;flex-wrap:wrap;gap:6px}
+.tag{background:var(--primary-light);color:var(--primary);padding:4px 10px;border-radius:14px;font-size:12px;font-weight:500}
+/* Image list */
+.img-list{list-style:none;padding:0}
+.img-list li{padding:8px 12px;background:#f8f8f8;border-radius:8px;margin-bottom:6px;font-size:13px;display:flex;align-items:center;gap:8px}
+.img-list li::before{content:'🖼️';font-size:16px}
+/* Copy buttons */
+.copy-bar{display:flex;gap:8px;flex-wrap:wrap;padding:16px 24px;border-top:1px solid var(--border);background:#fafafa;border-radius:0 0 16px 16px}
+.copy-btn{padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer;font-size:13px;color:var(--text2);transition:.2s;display:flex;align-items:center;gap:4px}
+.copy-btn:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-light)}
+.copy-btn.copied{background:var(--green);color:#fff;border-color:var(--green)}
+/* Sidebar */
+.sidebar .side-card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:20px;margin-bottom:16px}
+.side-card h3{font-size:16px;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.checklist{list-style:none}
+.checklist li{padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:13px;display:flex;align-items:center;gap:8px;cursor:pointer}
+.checklist li:last-child{border-bottom:none}
+.checklist li .check{width:18px;height:18px;border-radius:4px;border:2px solid #ddd;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.2s;font-size:11px;color:#fff}
+.checklist li.done .check{background:var(--green);border-color:var(--green)}
+.checklist li.done{color:var(--text3);text-decoration:line-through}
+.tip-box{background:#fff8e1;border-radius:10px;padding:14px;font-size:13px;line-height:1.8;color:#795548}
+.tip-box strong{color:#e65100}
+.progress-bar{height:8px;background:#eee;border-radius:4px;overflow:hidden;margin:8px 0}
+.progress-bar .fill{height:100%;background:linear-gradient(90deg,var(--primary),#ff6b81);border-radius:4px;transition:.5s}
+.nav-btns{display:flex;gap:8px;margin-top:16px}
+.nav-btn{flex:1;padding:10px;border-radius:10px;border:1px solid var(--border);background:#fff;cursor:pointer;text-align:center;font-size:13px;transition:.2s}
+.nav-btn:hover{border-color:var(--primary);color:var(--primary)}
+.nav-btn:disabled{opacity:.4;cursor:not-allowed}
+/* Toast */
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-100px);background:#333;color:#fff;padding:12px 24px;border-radius:10px;font-size:14px;z-index:999;transition:.3s;opacity:0}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+/* Search */
+.search-bar{display:flex;gap:8px;margin-bottom:16px}
+.search-bar input{flex:1;padding:10px 16px;border-radius:10px;border:2px solid var(--border);font-size:14px;outline:none;transition:.2s}
+.search-bar input:focus{border-color:var(--primary)}
+/* ===== Gemini AI Panel ===== */
+.ai-panel{background:var(--card);border-radius:16px;box-shadow:var(--shadow);margin-bottom:24px;overflow:hidden;border:2px solid transparent;transition:.3s}
+.ai-panel.active{border-color:var(--blue)}
+.ai-panel-header{background:linear-gradient(135deg,#4285f4,#34a853);color:#fff;padding:20px 24px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none}
+.ai-panel-header h2{font-size:18px;display:flex;align-items:center;gap:8px}
+.ai-panel-header .toggle-icon{font-size:20px;transition:.3s}
+.ai-panel-header .toggle-icon.open{transform:rotate(180deg)}
+.ai-panel-body{padding:0;max-height:0;overflow:hidden;transition:max-height .4s ease,padding .3s}
+.ai-panel-body.open{max-height:5000px;padding:24px}
+/* API Key */
+.api-key-row{display:flex;gap:8px;margin-bottom:16px;align-items:center}
+.api-key-row input{flex:1;padding:10px 14px;border:2px solid var(--border);border-radius:10px;font-size:13px;outline:none;font-family:monospace}
+.api-key-row input:focus{border-color:#4285f4}
+.api-key-row .key-status{font-size:12px;padding:4px 10px;border-radius:10px;white-space:nowrap}
+.key-ok{background:#e8f5e9;color:#2e7d32}
+.key-no{background:#fce4ec;color:#c62828}
+/* AI Tabs */
+.ai-tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.ai-tab{padding:8px 16px;border-radius:20px;border:2px solid var(--border);background:#fff;cursor:pointer;font-size:13px;font-weight:500;transition:.2s}
+.ai-tab:hover{border-color:#4285f4;color:#4285f4}
+.ai-tab.active{background:#4285f4;color:#fff;border-color:#4285f4}
+/* AI Content */
+.ai-section{display:none}
+.ai-section.active{display:block}
+.ai-form-group{margin-bottom:14px}
+.ai-form-group label{display:block;font-size:13px;font-weight:600;color:var(--text2);margin-bottom:6px}
+.ai-select,.ai-input,.ai-textarea{width:100%;padding:10px 14px;border:2px solid var(--border);border-radius:10px;font-size:14px;outline:none;transition:.2s;font-family:inherit}
+.ai-select:focus,.ai-input:focus,.ai-textarea:focus{border-color:#4285f4}
+.ai-textarea{min-height:80px;resize:vertical;line-height:1.6}
+.ai-btn{padding:12px 24px;border-radius:10px;border:none;font-size:14px;font-weight:600;cursor:pointer;transition:.2s;display:inline-flex;align-items:center;gap:6px}
+.ai-btn-primary{background:linear-gradient(135deg,#4285f4,#34a853);color:#fff}
+.ai-btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+.ai-btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.ai-btn-secondary{background:#fff;color:#4285f4;border:2px solid #4285f4}
+.ai-btn-secondary:hover{background:#e8f0fe}
+.ai-btn-orange{background:linear-gradient(135deg,var(--orange),var(--primary));color:#fff}
+.ai-btn-orange:hover{opacity:.9}
+.ai-btn-group{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+/* AI Result */
+.ai-result{margin-top:16px;border:2px solid #e3f2fd;border-radius:12px;overflow:hidden;display:none}
+.ai-result.show{display:block}
+.ai-result-header{background:#e3f2fd;padding:12px 16px;font-size:14px;font-weight:600;color:#1565c0;display:flex;justify-content:space-between;align-items:center}
+.ai-result-body{padding:16px;font-size:14px;line-height:2;white-space:pre-wrap;max-height:600px;overflow-y:auto;background:#fafbff}
+.ai-result-body::-webkit-scrollbar{width:6px}
+.ai-result-body::-webkit-scrollbar-thumb{background:#bbdefb;border-radius:3px}
+/* Trend cards */
+.trend-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin:12px 0}
+.trend-card{background:linear-gradient(135deg,#e3f2fd,#e8f5e9);border-radius:10px;padding:12px;text-align:center;cursor:pointer;transition:.2s;border:2px solid transparent;font-size:13px;font-weight:500}
+.trend-card:hover{border-color:#4285f4;transform:translateY(-2px);box-shadow:var(--shadow)}
+.trend-card .trend-icon{font-size:24px;margin-bottom:4px}
+/* Loading */
+.ai-loading{display:none;text-align:center;padding:30px}
+.ai-loading.show{display:block}
+.ai-loading .spinner{width:40px;height:40px;border:4px solid #e3f2fd;border-top-color:#4285f4;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ai-loading p{color:var(--text3);font-size:14px}
+/* Generated post preview */
+.gen-post{background:#f0faf0;border:2px solid #a5d6a7;border-radius:12px;padding:20px;margin-top:12px}
+.gen-post h4{color:#2e7d32;margin-bottom:8px;font-size:15px}
+.gen-post .gen-field{margin-bottom:12px}
+.gen-post .gen-label{font-size:12px;color:#66bb6a;font-weight:600;margin-bottom:4px}
+.gen-post .gen-value{background:#fff;border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.8;white-space:pre-wrap;border:1px solid #c8e6c9}
+.gen-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+/* Quick prompt chips */
+.prompt-chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.prompt-chip{background:#e8f0fe;color:#4285f4;padding:4px 12px;border-radius:14px;font-size:12px;cursor:pointer;transition:.2s;border:1px solid transparent}
+/* FAQ */
+.faq-list{display:flex;flex-direction:column;gap:10px}
+.faq-item{border:2px solid var(--border);border-radius:12px;overflow:hidden;transition:.2s}
+.faq-item:hover{border-color:#4285f4}
+.faq-item.open{border-color:#4285f4;box-shadow:0 2px 12px rgba(66,133,244,.12)}
+.faq-q{padding:14px 16px;font-size:14px;font-weight:600;color:var(--text1);cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none;gap:8px}
+.faq-q:hover{background:#f8f9ff}
+.faq-q .faq-arrow{transition:.3s;font-size:12px;color:#999;flex-shrink:0}
+.faq-item.open .faq-q .faq-arrow{transform:rotate(180deg);color:#4285f4}
+.faq-a{display:none;padding:0 16px 14px;font-size:13px;line-height:2;color:var(--text2);border-top:1px solid var(--border)}
+.faq-item.open .faq-a{display:block}
+.faq-category{font-size:13px;font-weight:600;color:#4285f4;margin:16px 0 8px;display:flex;align-items:center;gap:6px}
+.faq-category:first-child{margin-top:0}
+.faq-search{width:100%;padding:10px 14px 10px 36px;border:2px solid var(--border);border-radius:10px;font-size:14px;outline:none;transition:.2s;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23999' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85zm-5.242.656a5 5 0 1 1 0-10 5 5 0 0 1 0 10z'/%3E%3C/svg%3E") no-repeat 12px center}
+.faq-search:focus{border-color:#4285f4}
+.prompt-chip:hover{border-color:#4285f4;background:#d2e3fc}
+/* Override indicator */
+.ai-override-badge{display:inline-block;background:#fff3e0;color:#e65100;padding:2px 8px;border-radius:8px;font-size:11px;margin-left:8px}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="header">
+    <h1>📅 小红书推广 · 每日发布内容</h1>
+    <p>AI运营工具推广计划 — 30天内容日历</p>
+    <div class="today-badge" id="todayBadge">📌 今天是第 1 天</div>
+  </div>
+
+  <div class="stats" id="statsBar">
+    <div class="stat-card"><div class="num" id="statTotal">30</div><div class="label">总笔记数</div></div>
+    <div class="stat-card"><div class="num" id="statDone">0</div><div class="label">已发布</div></div>
+    <div class="stat-card"><div class="num" id="statWeek">1</div><div class="label">当前周</div></div>
+    <div class="stat-card"><div class="num" id="statProgress">0%</div><div class="label">完成进度</div></div>
+  </div>
+
+  <!-- ===== Gemini AI Panel ===== -->
+  <div class="ai-panel" id="aiPanel">
+    <div class="ai-panel-header" onclick="toggleAIPanel()">
+      <h2>🤖 Gemini AI · 智能推广内容生成</h2>
+      <span class="toggle-icon" id="aiToggleIcon">▼</span>
+    </div>
+    <div class="ai-panel-body" id="aiPanelBody">
+      <!-- API Key -->
+      <div class="api-key-row">
+        <input type="text" id="geminiApiKey" placeholder="粘贴 Gemini API Key（或在同目录 gemini_key.txt 中填写）" />
+        <button class="ai-btn ai-btn-secondary" onclick="saveApiKey()" style="padding:10px 16px">保存Key</button>
+        <span class="key-status" id="keyStatus"></span>
+      </div>
+
+      <!-- AI Tabs -->
+      <div class="ai-tabs">
+        <div class="ai-tab" onclick="switchAITab('profile')">🧑‍💼 账号包装</div>
+        <div class="ai-tab active" onclick="switchAITab('search')">🔍 热点搜索</div>
+        <div class="ai-tab" onclick="switchAITab('generate')">✍️ AI生成笔记</div>
+        <div class="ai-tab" onclick="switchAITab('optimize')">🚀 优化当前笔记</div>
+        <div class="ai-tab" onclick="switchAITab('strategy')">📈 推广策略</div>
+        <div class="ai-tab" onclick="switchAITab('faq')">❓ 常见问题</div>
+      </div>
+
+      <!-- Tab 0: 账号包装 -->
+      <div class="ai-section" id="tab-profile">
+        <h3 style="font-size:16px;margin-bottom:10px;color:#4285f4">🧑‍💼 账号包装一键生成</h3>
+        <div class="ai-form-group">
+          <label>账号定位/赛道</label>
+          <select class="ai-select" id="profileTrack">
+            <option value="emotion">🌸 情感赛道</option>
+            <option value="food">🍜 美食赛道</option>
+            <option value="travel">✈️ 旅行赛道</option>
+            <option value="fitness">💪 健身赛道</option>
+            <option value="fashion">👗 穿搭赛道</option>
+            <option value="tech">📱 科技数码赛道</option>
+          </select>
+        </div>
+        <div class="ai-form-group">
+          <label>目标用户/人设（可选）</label>
+          <input class="ai-input" id="profilePersona" placeholder="如：宝妈/上班族/大学生/副业党..." />
+        </div>
+        <div class="ai-form-group">
+          <label>账号风格（可选）</label>
+          <input class="ai-input" id="profileStyle" placeholder="如：治愈系/极简/科技感/文艺/高冷..." />
+        </div>
+        <div class="ai-btn-group">
+          <button class="ai-btn ai-btn-primary" onclick="genProfile()" id="profileBtn">✨ 一键生成账号包装</button>
+        </div>
+        <div class="ai-loading" id="profileLoading"><div class="spinner"></div><p>Gemini 正在生成账号包装...</p></div>
+        <div class="ai-result" id="profileResult">
+          <div class="ai-result-header">🧑‍💼 账号包装与SOP <button class="ai-btn ai-btn-secondary" onclick="copyAIResult('profileResult')" style="padding:4px 12px;font-size:12px">📋 复制</button></div>
+          <div class="ai-result-body" id="profileResultBody"></div>
+        </div>
+      </div>
+
+      <!-- Tab 1: 热点搜索 -->
+      <div class="ai-section active" id="tab-search">
+        <p style="font-size:13px;color:var(--text3);margin-bottom:12px">🌐 使用 Gemini 联网搜索小红书最新爆款趋势、热门话题，为你的推广内容提供灵感</p>
+        <div class="ai-form-group">
+          <label>选择搜索方向</label>
+          <div class="prompt-chips">
+            <span class="prompt-chip" onclick="fillSearch('小红书2026年最新AI运营工具推广趋势')">🔥 AI工具推广趋势</span>
+            <span class="prompt-chip" onclick="fillSearch('小红书运营工具类爆款笔记分析')">📊 爆款笔记分析</span>
+            <span class="prompt-chip" onclick="fillSearch('小红书当前热门话题和流量密码')">💡 热门话题</span>
+            <span class="prompt-chip" onclick="fillSearch('小红书工具类产品推广成功案例')">🏆 成功案例</span>
+            <span class="prompt-chip" onclick="fillSearch('小红书最新算法变化和运营策略调整')">📱 算法变化</span>
+            <span class="prompt-chip" onclick="fillSearch('小红书副业赛道最新变现方式趋势')">💰 变现趋势</span>
+          </div>
+        </div>
+        <div class="ai-form-group">
+          <label>自定义搜索内容</label>
+          <input class="ai-input" id="searchQuery" placeholder="输入你想搜索的推广相关话题..." />
+        </div>
+        <div class="ai-btn-group">
+          <button class="ai-btn ai-btn-primary" onclick="geminiSearch()" id="searchBtn">🔍 Gemini 联网搜索</button>
+        </div>
+        <div class="ai-loading" id="searchLoading"><div class="spinner"></div><p>Gemini 正在联网搜索最新信息...</p></div>
+        <div class="ai-result" id="searchResult">
+          <div class="ai-result-header">🔍 搜索结果 <button class="ai-btn ai-btn-secondary" onclick="copyAIResult('searchResult')" style="padding:4px 12px;font-size:12px">📋 复制</button></div>
+          <div class="ai-result-body" id="searchResultBody"></div>
+        </div>
+      </div>
+
+      <!-- Tab 2: AI生成笔记 -->
+      <div class="ai-section" id="tab-generate">
+                <div class="ai-form-group">
+                  <label>AI生图（nano banana）</label>
+                  <textarea class="ai-textarea" id="imgPrompt" placeholder="粘贴AI生成的图片描述或nano banana提示词，每行一条"></textarea>
+                </div>
+                <div class="ai-btn-group">
+                  <button class="ai-btn ai-btn-orange" onclick="genImages()" id="imgGenBtn">🖼️ 一键AI生图</button>
+                </div>
+                <div class="ai-loading" id="imgGenLoading"><div class="spinner"></div><p>Gemini 正在生成图片...</p></div>
+                <div class="ai-result" id="imgGenResult">
+                  <div class="ai-result-header">🖼️ AI生成图片 <button class="ai-btn ai-btn-secondary" onclick="copyAIResult('imgGenResult')" style="padding:4px 12px;font-size:12px">📋 复制全部</button></div>
+                  <div class="ai-result-body" id="imgGenResultBody"></div>
+                </div>
+        <p style="font-size:13px;color:var(--text3);margin-bottom:12px">✨ Gemini 联网分析当前小红书热点，结合你工具的6大赛道功能，生成高质量推广笔记</p>
+        <div class="ai-form-group">
+          <label>笔记类型</label>
+          <select class="ai-select" id="genType">
+            <option value="effect">🔥 效果展示型 — 展示工具的实际效果</option>
+            <option value="pain">😫 痛点共鸣型 — 从用户痛点切入</option>
+            <option value="tutorial">📖 教程干货型 — 手把手教学</option>
+            <option value="compare">⚖️ 对比测评型 — 与其他方案对比</option>
+            <option value="case">📋 用户案例型 — 展示用户使用效果</option>
+            <option value="monetize">💰 变现攻略型 — 聚焦赚钱路径</option>
+            <option value="trend">📈 热点结合型 — 蹭小红书当前热点</option>
+          </select>
+        </div>
+        <div class="ai-form-group">
+          <label>重点推广的赛道</label>
+          <select class="ai-select" id="genTrack">
+            <option value="all">🎯 综合展示（6大赛道）</option>
+            <option value="emotion">🌸 情感赛道</option>
+            <option value="food">🍜 美食赛道</option>
+            <option value="travel">✈️ 旅行赛道</option>
+            <option value="fitness">💪 健身赛道</option>
+            <option value="fashion">👗 穿搭赛道</option>
+            <option value="tech">📱 科技数码赛道</option>
+          </select>
+        </div>
+        <div class="ai-form-group">
+          <label>额外要求（可选）</label>
+          <textarea class="ai-textarea" id="genExtra" placeholder="例如：针对宝妈群体、强调省时间、结合最新热点..."></textarea>
+        </div>
+        <div class="ai-btn-group">
+          <button class="ai-btn ai-btn-primary" onclick="geminiGenerate()" id="genBtn">✨ AI 生成推广笔记</button>
+          <button class="ai-btn ai-btn-secondary" onclick="geminiGenerateWithSearch()" id="genSearchBtn">🌐 联网热点 + 生成</button>
+        </div>
+        <div class="ai-loading" id="genLoading"><div class="spinner"></div><p>Gemini 正在联网分析热点并生成内容...</p></div>
+        <div class="ai-result" id="genResult">
+          <div class="ai-result-header">✨ AI 生成的推广笔记 <button class="ai-btn ai-btn-secondary" onclick="copyAIResult('genResult')" style="padding:4px 12px;font-size:12px">📋 复制全部</button></div>
+          <div class="ai-result-body" id="genResultBody"></div>
+          <div style="padding:12px 16px;border-top:1px solid #e3f2fd;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="ai-btn ai-btn-orange" onclick="applyToToday()" style="font-size:13px;padding:8px 16px">📌 应用到今天的发布内容</button>
+            <button class="ai-btn ai-btn-secondary" onclick="geminiGenerate()" style="font-size:13px;padding:8px 16px">🔄 重新生成</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 3: 优化当前笔记 -->
+      <div class="ai-section" id="tab-optimize">
+        <p style="font-size:13px;color:var(--text3);margin-bottom:12px">🚀 使用 Gemini 联网分析当前小红书爆款规律，优化今天的预设笔记内容，使其更具传播力</p>
+        <div class="ai-form-group">
+          <label>优化方向</label>
+          <select class="ai-select" id="optDirection">
+            <option value="viral">🔥 更容易爆款 — 优化标题和钩子</option>
+            <option value="convert">💰 更强转化力 — 优化变现引导</option>
+            <option value="engage">💬 更高互动率 — 增加互动引导</option>
+            <option value="seo">🔍 更好搜索排名 — 优化关键词布局</option>
+            <option value="trend">📈 结合最新热点 — 蹭热点改写</option>
+          </select>
+        </div>
+        <div class="ai-btn-group">
+          <button class="ai-btn ai-btn-primary" onclick="geminiOptimize()" id="optBtn">🚀 AI 优化当前笔记（Day <span id="optDayNum">1</span>）</button>
+        </div>
+        <div class="ai-loading" id="optLoading"><div class="spinner"></div><p>Gemini 正在分析爆款规律并优化内容...</p></div>
+        <div class="ai-result" id="optResult">
+          <div class="ai-result-header">🚀 优化后的内容 <button class="ai-btn ai-btn-secondary" onclick="copyAIResult('optResult')" style="padding:4px 12px;font-size:12px">📋 复制</button></div>
+          <div class="ai-result-body" id="optResultBody"></div>
+          <div style="padding:12px 16px;border-top:1px solid #e3f2fd;display:flex;gap:8px">
+            <button class="ai-btn ai-btn-orange" onclick="applyOptimized()" style="font-size:13px;padding:8px 16px">📌 替换当前笔记</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 4: 推广策略 -->
+      <div class="ai-section" id="tab-strategy">
+        <p style="font-size:13px;color:var(--text3);margin-bottom:12px">📈 Gemini 联网搜索最新小红书推广策略、运营技巧，为你制定个性化推广方案</p>
+        <div class="ai-form-group">
+          <label>策略方向</label>
+          <select class="ai-select" id="stratType">
+            <option value="growth">📈 涨粉增长策略 — 如何快速获取精准粉丝</option>
+            <option value="content">📝 内容运营策略 — 什么内容最容易火</option>
+            <option value="monetize">💰 变现策略分析 — 最新的变现方式和技巧</option>
+            <option value="compete">🏆 竞品分析 — 分析同类工具的推广方式</option>
+            <option value="platform">📱 平台趋势 — 小红书最新政策和算法变化</option>
+            <option value="channel">🔗 全渠道推广 — 站内外联动推广方案</option>
+          </select>
+        </div>
+        <div class="ai-form-group">
+          <label>补充信息（可选）</label>
+          <textarea class="ai-textarea" id="stratExtra" placeholder="例如：目前粉丝500、主要用户是宝妈群体、预算有限..."></textarea>
+        </div>
+        <div class="ai-btn-group">
+          <button class="ai-btn ai-btn-primary" onclick="geminiStrategy()" id="stratBtn">📈 获取推广策略建议</button>
+        </div>
+        <div class="ai-loading" id="stratLoading"><div class="spinner"></div><p>Gemini 正在联网搜索最新推广策略...</p></div>
+        <div class="ai-result" id="stratResult">
+          <div class="ai-result-header">📈 推广策略建议 <button class="ai-btn ai-btn-secondary" onclick="copyAIResult('stratResult')" style="padding:4px 12px;font-size:12px">📋 复制</button></div>
+          <div class="ai-result-body" id="stratResultBody"></div>
+        </div>
+      </div>
+    </div>
+
+      <!-- Tab 5: 常见问题 -->
+      <div class="ai-section" id="tab-faq">
+        <p style="font-size:13px;color:var(--text3);margin-bottom:12px">❓ 客户常问的问题及专业解答，点击问题展开查看答案，也可以让 AI 生成更多 Q&A</p>
+        <input class="faq-search" id="faqSearchInput" placeholder="搜索问题..." oninput="filterFAQ()" />
+        <div class="faq-list" id="faqList" style="margin-top:14px"></div>
+        <div class="ai-btn-group" style="margin-top:16px">
+          <button class="ai-btn ai-btn-primary" onclick="aiGenFAQ()" id="faqGenBtn">🤖 AI生成更多Q&A</button>
+          <button class="ai-btn ai-btn-secondary" onclick="copyAllFAQ()">📋 复制全部Q&A</button>
+        </div>
+        <div class="ai-loading" id="faqLoading"><div class="spinner"></div><p>Gemini 正在生成常见问题...</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="calendar-section">
+    <div class="week-tabs" id="weekTabs"></div>
+    <div class="day-grid" id="dayGrid"></div>
+  </div>
+
+  <div class="content-area">
+    <div class="post-card" id="postCard">
+      <div class="post-header">
+        <div class="day-info">
+          <div class="day-circle" id="dayCircle">1</div>
+          <div class="day-meta">
+            <h3 id="dayTitle">DAY 01</h3>
+            <span id="dayType">效果炸裂型</span>
+          </div>
+        </div>
+        <div class="post-time" id="postTime">20:00 发布</div>
+      </div>
+      <div class="post-body" id="postBody"></div>
+      <div class="copy-bar" id="copyBar"></div>
+    </div>
+
+    <div class="sidebar">
+      <div class="side-card">
+        <h3>📊 今日进度</h3>
+        <div class="progress-bar"><div class="fill" id="progressFill" style="width:0%"></div></div>
+        <div id="checklist" class="checklist"></div>
+      </div>
+      <div class="side-card">
+        <h3>💡 今日提示</h3>
+        <div class="tip-box" id="tipBox"></div>
+      </div>
+      <div class="side-card">
+        <div class="nav-btns">
+          <button class="nav-btn" id="prevBtn" onclick="navigate(-1)">← 上一天</button>
+          <button class="nav-btn" id="nextBtn" onclick="navigate(1)">下一天 →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== AI生图（nano banana） =====
+async function genImages() {
+  const prompts = document.getElementById('imgPrompt').value.trim().split(/\n+/).filter(Boolean);
+  if (!prompts.length) { showToast('请粘贴图片描述或nano banana提示词'); return; }
+  const btn = document.getElementById('imgGenBtn');
+  btn.disabled = true;
+  setLoading('imgGenLoading', true);
+  document.getElementById('imgGenResult').classList.remove('show');
+  let results = [];
+  for (let i = 0; i < prompts.length; ++i) {
+    let img = await tryGenImage(prompts[i]);
+    results.push(`<div style='margin-bottom:16px'><div style='font-size:13px;color:#4285f4;margin-bottom:4px'>${prompts[i]}</div>${img}</div>`);
+  }
+  document.getElementById('imgGenResultBody').innerHTML = results.join('');
+  document.getElementById('imgGenResult').classList.add('show');
+  btn.disabled = false;
+  setLoading('imgGenLoading', false);
+}
+
+// 存储生成的图片数据
+window._genImgData = [];
+
+async function tryGenImage(prompt) {
+  // 优先用 gemini-3.1-flash-image-preview，不行自动降级
+  const models = ['gemini-3.1-flash-image-preview', 'gemini-3-pro-image-preview', 'gemini-2.5-flash'];
+  const key = getApiKey();
+  for (let m of models) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${key}`;
+      const body = {
+        contents: [{ parts: [{ text: `Generate an image: ${prompt}` }] }],
+        generationConfig: {
+          responseModalities: ['IMAGE', 'TEXT']
+        }
+      };
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      if (!resp.ok) continue;
+      const data = await resp.json();
+      // 解析图片数据（inline_data 格式）
+      const parts = data?.candidates?.[0]?.content?.parts || [];
+      for (const part of parts) {
+        if (part.inlineData) {
+          const mime = part.inlineData.mimeType || 'image/png';
+          const b64 = part.inlineData.data;
+          const imgIdx = window._genImgData.length;
+          window._genImgData.push(b64);
+          return `<img src='data:${mime};base64,${b64}' style='max-width:100%;border-radius:12px;box-shadow:0 2px 12px #eee;margin-bottom:4px'>
+            <div style='margin-top:6px;display:flex;gap:6px'>
+              <button class='ai-btn ai-btn-secondary' style='font-size:12px;padding:4px 12px' onclick='copyGenImg(${imgIdx})'>📋 复制图片</button>
+              <button class='ai-btn ai-btn-secondary' style='font-size:12px;padding:4px 12px' onclick='downloadGenImg(${imgIdx},"${mime}")'>💾 下载图片</button>
+            </div>`;
+        }
+      }
+      // 如果没有图片但有文字反馈
+      const textPart = parts.find(p => p.text);
+      if (textPart) return `<div style='color:#795548;font-size:13px'>⚠️ 模型 ${m} 返回了文字而非图片：${textPart.text.slice(0,200)}</div>`;
+    } catch (e) { continue; }
+  }
+  return `<span style='color:#e65100'>❌ 图片生成失败，请检查API Key权限或模型可用性</span>`;
+}
+
+function copyGenImg(idx) {
+  const b64 = window._genImgData[idx];
+  if (!b64) { showToast('图片数据不存在'); return; }
+  navigator.clipboard.writeText(b64).then(() => showToast('✅ 已复制Base64')).catch(() => showToast('复制失败'));
+}
+
+function downloadGenImg(idx, mime) {
+  const b64 = window._genImgData[idx];
+  if (!b64) return;
+  const ext = mime.includes('png') ? 'png' : 'jpg';
+  const a = document.createElement('a');
+  a.href = `data:${mime};base64,${b64}`;
+  a.download = `nano_banana_${idx + 1}.${ext}`;
+  a.click();
+  showToast('✅ 图片已下载');
+}
+// ===== 账号包装AI生成 =====
+async function genProfile() {
+  const track = document.getElementById('profileTrack').value;
+  const persona = document.getElementById('profilePersona').value.trim();
+  const style = document.getElementById('profileStyle').value.trim();
+  const btn = document.getElementById('profileBtn');
+  btn.disabled = true;
+  setLoading('profileLoading', true);
+  document.getElementById('profileResult').classList.remove('show');
+  try {
+    const prompt = `你是小红书顶级账号策划专家和Gemini大模型，请为以下账号一键生成完整包装方案，输出内容严格分为以下部分：
+
+【1. 账号名】
+请生成4个风格各异、易记、适合小红书的账号名（带emoji），并说明命名思路。
+
+【2. 头像nano banana生图提示】
+请为nano banana AI绘图生成3条头像提示词（prompt），要求风格与账号定位和人设一致，适合小红书头像，描述要详细。
+
+【3. 背景图nano banana生图提示】
+请为nano banana AI绘图生成2条背景图提示词，要求突出账号风格和赛道特征。
+
+【4. 账号简介/定位文案】
+请生成2条账号简介（80字内），1条账号定位文案（40字内），1组账号关键词（5-8个）。
+
+【5. 账号SOP】
+请输出每日发布笔记的详细SOP，包括：内容生成、封面图、发布时间、互动引导、评论引流、私信话术、数据追踪等全流程。
+
+【账号定位/赛道】${TRACK_DETAILS[track]}
+${persona ? '【目标用户/人设】' + persona : ''}
+${style ? '【账号风格】' + style : ''}
+
+输出时严格分段，每部分都要有内容，适合直接复制使用。`;
+    const result = await callGemini(prompt, true);
+    document.getElementById('profileResultBody').textContent = result;
+    document.getElementById('profileResult').classList.add('show');
+  } catch (e) {
+    showToast('❌ ' + e.message);
+  } finally {
+    btn.disabled = false;
+    setLoading('profileLoading', false);
+  }
+}
+// ========== 30天完整内容数据 ==========
+const POSTS = [
+// ---- DAY 1 ----
+{
+  day: 1, week: 1, type: '效果炸裂型（首发引爆）', time: '20:00',
+  cover: '30秒 AI 写出小红书爆款笔记 😱',
+  title: '🔥30秒！AI帮我写了一条小红书笔记，数据直接起飞了',
+  content: `姐妹们我真的震惊了！！！
+
+之前写一条小红书笔记要磨2-3个小时
+现在用这个AI工具，30秒直接生成👇
+
+✅ 标题（自带爆款公式）
+✅ 正文（小红书语感拉满）
+✅ 标签（精准匹配分类）
+✅ 封面图（5种风格一键出图）
+
+我试了一下情感赛道🌸
+选了「治愈」分类 → 点击生成
+它直接给我写了一条超有共鸣的治愈笔记
+连封面图都是小红书风格的！！
+
+最绝的是它支持6种账号类型：
+🌸 情感｜🍜 美食｜✈️ 旅行
+💪 健身｜👗 穿搭｜📱 科技
+
+一键切换赛道，所有文案、标签、风格全自动变！
+相当于买了6个工具！
+
+我用它发了3条笔记，2条数据都比我自己写的好😭
+
+想体验的姐妹私信我「体验」
+给你开免费试用～`,
+  tags: ['小红书运营','AI工具','小红书涨粉','自媒体工具','小红书文案','副业工具','内容创作'],
+  images: ['封面图（白底大字「30秒AI写出小红书爆款笔记😱」）','工具界面截图——选择「情感🌸」赛道','AI生成的笔记内容截图','AI生成的封面图效果','6种赛道切换界面','引导私信的结尾图'],
+  tip: '第一条笔记非常关键！建议做录屏演示，从打开工具→选赛道→生成笔记→查看结果的全流程，配画外音讲解效果最好。'
+},
+// ---- DAY 2 ----
+{
+  day: 2, week: 1, type: '痛点共鸣型', time: '7:30',
+  cover: '做小红书3个月0收入？你可能只差这一步',
+  title: '做了3个月小红书还没赚到钱？90%的人都卡在同一个地方',
+  content: `你是不是也这样？👇
+
+😫 每天花3小时写笔记，阅读量不到50
+😫 看了一堆「涨粉教程」还是不知道发什么
+😫 做了3个月一分钱没赚到，想放弃了
+
+先别急着放弃！！
+
+我之前也一样，后来发现问题根本不是「不够努力」
+而是缺一个系统化的工具来帮你——
+
+1️⃣ 不知道写什么 → AI一键生成完整笔记
+   选个分类就行，标题正文标签全部搞定
+
+2️⃣ 不会做封面 → 5种风格AI自动出图
+   小红书风格/极简文艺/水彩插画/渐变文字/摄影风
+   （这几种风格都是工具内置的🌸）
+
+3️⃣ 不知道发几点 → 自动推荐最佳时间
+   每个分类都有独立的黄金发布时段计算📊
+
+4️⃣ 不知道怎么赚钱 → 内置7种变现策略
+   从0粉丝到规模化变现，每个阶段该做什么都列好了
+
+5️⃣ 不会起号包装 → AI品牌全案
+   账号名+头像+封面+人设定位，一键全部生成💡
+
+工具还支持6大赛道一键切换
+不管你做什么领域都能用
+
+想了解的评论区扣「1」
+我私信你体验链接～`,
+  tags: ['小红书运营','小红书变现','副业赚钱','自媒体赚钱','小红书新手','涨粉方法'],
+  images: ['封面图（大字标题+痛点配色）','5大痛点列表截图','工具功能一览图','6大赛道展示','变现策略界面截图'],
+  tip: '痛点型内容互动率最高。发布后20分钟内要积极回复每一条评论，引导用户私信。'
+},
+// ---- DAY 3 ----
+{
+  day: 3, week: 1, type: '赛道演示：情感🌸', time: '20:30',
+  cover: 'AI写的情感文案，比我自己写的还有感觉😭',
+  title: '测试了一下AI写情感文案，这水平...我词穷了',
+  content: `今天试了一下这个AI工具的情感赛道🌸
+选了「治愈」分类，30秒生成了一条笔记
+
+结果出来我看了三遍...
+它比我自己写的还有感觉😭😭
+
+来看看效果👇
+
+—— AI 生成的治愈笔记 ——
+（截图放在图片里了）
+
+它是怎么做到的？
+
+原来工具内置了「资深小红书情感类博主」的AI人设
+然后会结合当前的爆款趋势和平台语感来生成
+
+情感赛道一共8个分类：
+🌸 治愈 ｜ 🌱 成长 ｜ ❤️ 爱情 ｜ 🤝 友情
+💫 自我 ｜ 🍂 离别 ｜ ☀️ 温暖 ｜ 🕊️ 释怀
+
+每个分类的关键词、标签、发布时间都不一样
+比如——
+• 治愈类：深夜22:00-23:00发效果最好
+• 成长类：早上7:00-8:00更合适
+
+这些工具全部帮你算好了！不用自己研究！
+
+想做情感号的姐妹
+私信「情感」我发你看看效果～`,
+  tags: ['情感语录','治愈文案','小红书文案','AI写作','情感博主','小红书运营'],
+  images: ['封面图（情感风配色）','切换到情感赛道的界面','AI生成的治愈笔记效果截图','8个分类展示','发布时间推荐截图'],
+  tip: '情感赛道是最多人做的方向，这条笔记要重点展示AI生成的文案质量。建议截图一段真实生成的治愈文案作为配图。'
+},
+// ---- DAY 4 ----
+{
+  day: 4, week: 1, type: '赛道演示：美食🍜', time: '11:30',
+  cover: '美食博主看过来！AI帮你写探店笔记+做封面',
+  title: '美食博主必看！30秒生成探店笔记+封面图，这效率绝了',
+  content: `做美食号的姐妹看过来！！🍜
+
+之前写一条探店笔记要改半天
+现在用这个AI工具直接生成，体验一下👇
+
+选了「美食」赛道 → 「探店」分类
+30秒出来了一条完整笔记：
+✅ 吸睛标题
+✅ 探店口感描述（超有食欲那种）
+✅ 美食标签自动匹配
+✅ 封面图直接用「小红书美食风格」出图
+
+美食赛道一共8个分类：
+🍳 家常菜 ｜ 🧁 烘焙 ｜ 🏪 探店 ｜ 🥗 减脂餐
+🍰 甜品 ｜ 🍞 早餐 ｜ 🌙 宵夜 ｜ 🧋 饮品
+
+而且它还会推荐最佳发布时间⏰
+比如减脂餐适合早上发
+宵夜类适合晚上发
+每个分类都有独立的时间策略
+
+最爽的是——
+同一个工具切一下就能变成情感号、旅行号...
+做矩阵的简直起飞🚀
+
+📌 想体验美食赛道的私信「美食」`,
+  tags: ['美食博主','探店','小红书美食','美食文案','AI工具','自媒体工具','小红书运营'],
+  images: ['封面图（美食风格暖色调）','美食赛道界面截图','AI生成的探店笔记','美食封面图效果','8个分类展示'],
+  tip: '美食赛道在午饭时间发布效果最好。配图务必展示AI生成的美食类文案截图，让人感受到"有食欲的文字"。'
+},
+// ---- DAY 5 ----
+{
+  day: 5, week: 1, type: '功能拆解：品牌化包装', time: '20:00',
+  cover: '不会起号？AI帮你一键搞定账号全套包装',
+  title: '小红书起号最难的不是内容，而是包装！AI一键帮你全搞定',
+  content: `你有没有这种困扰？👇
+
+想做小红书，但卡在第一步：
+❌ 不知道叫什么名字
+❌ 不会做头像
+❌ 不知道封面图放什么
+❌ 简介不知道写什么人设
+
+这些问题这个工具全解决了！！
+
+它有一个「品牌化包装」功能——
+
+只需要输入你想做的方向
+AI会一键生成👇
+✨ 账号名（4种风格可选）
+   - 温柔治愈风
+   - 高级故事感
+   - 简短好记型
+   - 有记忆点型
+
+✨ 头像（AI生成，正方形构图，符合小红书调性）
+
+✨ 主页封面（横版视觉图，专业感拉满）
+
+✨ 账号定位 + 目标人群 + 关键词
+
+举个例子：
+选了「情感」赛道 → 它默认定位是：
+👤 目标人群：20-35岁希望被治愈、获得情绪价值的女生
+🎯 人设：温柔但有边界感，像一个清醒又会共情的朋友
+🏷️ 关键词：治愈、成长、边界感、清醒、温柔坚定
+
+6个赛道每个都有独立的品牌化配置
+选完赛道自动匹配，不用动脑子！
+
+想要AI帮你包装一个账号？
+评论区告诉我你想做什么赛道～`,
+  tags: ['小红书起号','账号包装','小红书头像','账号定位','AI工具','自媒体起号'],
+  images: ['封面图（账号包装主题）','品牌化功能界面','4种名字风格示例','AI生成的头像效果','AI生成的Banner效果','定位配置页面'],
+  tip: '品牌包装功能是新手最需要的。这条笔记可以用对比方式展示：包装前的素号 vs 包装后的专业感。'
+},
+// ---- DAY 6 ----
+{
+  day: 6, week: 1, type: '功能拆解：封面图生成', time: '7:30',
+  cover: '5种风格AI封面图一键生成 再也不用P图了',
+  title: '不会做封面图？这个AI工具5种风格一键出图，太省时间了',
+  content: `做小红书最烦的事之一——做！封！面！图！
+
+每次打开PS/Canva就头疼
+选模板 → 改文字 → 调颜色 → 导出
+一张封面搞半小时😩
+
+现在这个工具一键搞定👇
+
+内置5种小红书主流风格：
+🎨 小红书风格 — 柔和色调，文艺感，最百搭
+✨ 极简文艺风 — 大面积留白，高级感
+🎨 水彩插画风 — 手绘质感，很适合情感/旅行
+🌈 渐变文字风 — 抓眼球，适合干货类
+📷 治愈摄影风 — 真实感，适合生活分享
+
+而且！6个赛道的图片风格都不一样！
+美食赛道的风格侧重食物质感
+旅行赛道侧重风景氛围
+穿搭赛道侧重时尚感
+
+每个赛道都有专属的AI提示词
+生成出来的图直接就是小红书调性！
+
+操作就3步：
+1️⃣ 选赛道
+2️⃣ 选风格
+3️⃣ 点生成
+完事！
+
+再也不用花时间P图了🥹
+
+📌 想看效果的评论区扣「封面」`,
+  tags: ['小红书封面','封面设计','AI出图','小红书模板','自媒体工具','省时间'],
+  images: ['封面图（5种风格拼图）','小红书风格示例','极简文艺风示例','水彩插画风示例','渐变文字风示例','治愈摄影风示例'],
+  tip: '配图是这条笔记的关键！每种风格各放一张生成效果图，排列展示对比效果会非常好。'
+},
+// ---- DAY 7 ----
+{
+  day: 7, week: 1, type: '第一周复盘', time: '20:30',
+  cover: '第一周数据复盘：AI工具到底有没有用？',
+  title: '用AI工具运营小红书7天，我的真实数据来了（附对比）',
+  content: `上周开始用AI工具发小红书
+今天来交一份真实作业📊
+
+先说结论：效率提升至少5倍！
+
+📈 这一周的数据：
+• 发了 X 条笔记（请替换真实数据）
+• 总曝光 XXXX
+• 点赞 XXX
+• 收藏 XXX
+• 新增粉丝 XX
+
+⏱️ 效率对比：
+之前（手动写）
+→ 想选题 30min + 写正文 60min + 做封面 30min = 2小时/条
+
+现在（AI工具）
+→ 选赛道 10s + 选分类 5s + 生成 30s + 微调 10min = 15分钟/条
+
+时间从2小时→15分钟，省了87%的时间⚡
+
+哪些笔记表现最好？
+答：展示实际效果的录屏/截图类笔记
+
+大家最关心什么功能？
+答：排名第一「AI生成笔记」，第二「封面图」，第三「变现策略」
+
+下周计划：
+☐ 演示更多赛道（旅行、健身、穿搭）
+☐ 做一个完整的从0起号教程
+☐ 分享工具的变现策略功能
+
+想跟着一起用工具运营的
+私信「体验」我发你试用链接🎁`,
+  tags: ['小红书数据','运营复盘','自媒体数据','小红书运营','效率工具','AI运营'],
+  images: ['封面图（数据复盘主题）','本周笔记数据截图','效率对比图表','下周预告图'],
+  tip: '⚠️ 用真实数据替换所有X。复盘帖的真实感很重要。如果第一周数据不太好也没关系，重点讲"效率提升"和"学到了什么"。'
+},
+// ---- DAY 8 ----
+{
+  day: 8, week: 2, type: '赛道演示：旅行✈️', time: '8:00',
+  cover: '旅行博主用AI写攻略，居然比自己写的还详细',
+  title: '旅行博主效率神器！AI一键写出穷游攻略+旅拍笔记',
+  content: `做旅行号的宝子们看过来✈️
+
+我用这个AI工具测试了「旅行」赛道
+效果真的惊到我了！
+
+旅行赛道有8个分类：
+🏙️ 城市探索 ｜ 🏔️ Nature徒步 ｜ 🏨 住宿推荐
+💰 穷游攻略 ｜ 👨‍👩‍👧 亲子游 ｜ 📸 摄影旅拍
+🚗 自驾游 ｜ 🍜 美食旅行
+
+我选了「穷游攻略」→ 点生成
+AI直接写了一条超详细的攻略笔记！
+包含行程安排、交通方式、省钱tips全都有
+
+封面图选了「治愈摄影风」
+出来的效果直接就能发！
+
+而且这个工具会告诉你：
+📌 穷游攻略类笔记 → 适合晚间发布
+📌 旅拍类笔记 → 适合周末中午发
+
+最适合谁用？
+✅ 全职旅行博主（提高产出效率）
+✅ 旅游类矩阵号（批量生成攻略）
+✅ 旅行社/民宿运营（种草内容）
+
+想看旅行赛道的效果？
+私信「旅行」我演示给你看～`,
+  tags: ['旅行博主','穷游攻略','小红书旅行','AI写作','旅行号运营','自媒体工具'],
+  images: ['封面图（旅行风蓝色调）','旅行赛道界面截图','穷游攻略生成效果','封面图效果（摄影风）','8个分类展示'],
+  tip: '旅行赛道配图建议用风景氛围感的截图。如果手上有旅行照片，可以和AI生成的攻略文案放在一起展示。'
+},
+// ---- DAY 9 ----
+{
+  day: 9, week: 2, type: '功能拆解：最佳发布时间', time: '20:00',
+  cover: '小红书几点发笔记效果最好？这工具直接帮你算好了',
+  title: '原来不同内容要不同时间发！难怪你的笔记没流量',
+  content: `你知道吗？同一条笔记
+发的时间不对，流量可能差10倍！！
+
+很多人每次都「随缘发」
+这就是你笔记没曝光的原因之一😱
+
+这个AI工具有一个超实用的功能：
+⏰ 每个分类独立推荐最佳发布时间
+
+不是那种笼统的「8点和12点最好」
+而是根据你的赛道+分类精确推荐！
+
+举个例子——
+
+🌸 情感赛道：
+• 治愈类 → 深夜22:00-23:00最佳
+• 成长类 → 早上7:00-8:00最佳
+
+🍜 美食赛道：
+• 早餐类 → 早上发
+• 宵夜类 → 晚上发
+
+💪 健身赛道：
+• 减脂类 → 下午发
+
+而且它用的是加权分数系统
+不同时段有不同的曝光权重
+帮你选出分数最高的那个时间段发！
+
+这个功能6种赛道 × 8个分类 = 48种独立推荐
+比你自己研究100篇教程都有用！
+
+📌 私信「时间」我发你各赛道的发布时间表～`,
+  tags: ['小红书发布时间','小红书流量','涨粉技巧','小红书算法','运营技巧','自媒体干货'],
+  images: ['封面图（时钟+时间表主题）','发布时间推荐界面截图','情感赛道时间表','美食赛道时间表','加权分数展示'],
+  tip: '这是一条干货型笔记，收藏率会很高。配图建议做一张各赛道最佳发布时间的汇总表，方便用户截图保存。'
+},
+// ---- DAY 10 ----
+{
+  day: 10, week: 2, type: '场景化：矩阵运营', time: '12:00',
+  cover: '管5个小红书账号不用切来切去了！',
+  title: '同时运营5个小红书账号？一个工具搞定，效率直接×5',
+  content: `做矩阵号的宝子请坐好！！
+
+之前管多个账号有多痛苦你们懂的：
+❌ 每个号的内容方向不一样，要分别想
+❌ 文案风格要区分，容易串
+❌ 每个号的封面风格也不同
+❌ 发布时间策略也不一样
+
+现在用这个工具👇
+
+一个平台6种赛道一键切换：
+
+🌸 1号：做情感号 → 切到「情感」
+🍜 2号：做美食号 → 切到「美食」
+✈️ 3号：做旅行号 → 切到「旅行」
+💪 4号：做健身号 → 切到「健身」
+👗 5号：做穿搭号 → 切到「穿搭」
+
+切换之后——
+✅ AI文案风格自动变
+✅ 分类体系自动变（每个赛道8个分类）
+✅ 封面图风格自动变
+✅ 品牌包装自动变
+✅ 变现策略自动变
+✅ 发布时间推荐自动变
+
+做矩阵的效率直接翻5倍
+每个号每天15分钟就能搞定内容
+
+适合谁？
+→ MCN机构
+→ 个人矩阵运营
+→ 代运营工作室
+
+📌 私信「矩阵」看详细演示～`,
+  tags: ['矩阵运营','小红书矩阵','多账号管理','MCN','代运营','运营效率','自媒体工具'],
+  images: ['封面图（多账号切换主题）','6赛道切换动图/截图','切换前后对比','数据区分展示'],
+  tip: '矩阵运营的用户是高客单价用户，重点引导这类用户私信。配图建议展示切换赛道前后界面的变化对比。'
+},
+// ---- DAY 11 ----
+{
+  day: 11, week: 2, type: '赛道演示：健身💪', time: '7:00',
+  cover: '健身博主偷懒神器 AI帮你写减脂教程笔记',
+  title: '健身博主都在用的AI工具，减脂/增肌/瑜伽笔记一键生成',
+  content: `做健身号的宝子有福了💪
+
+一直想做健身号但不知道怎么写笔记？
+这个工具直接帮你搞定！
+
+健身赛道8个分类：
+🔥 减脂 ｜ 💪 增肌 ｜ 🧘 瑜伽 ｜ 🏃 跑步
+🏠 居家健身 ｜ 🥗 饮食搭配 ｜ 🧍 体态矫正 ｜ 👟 健身穿搭
+
+我测试了「减脂」分类——
+AI生成了一条完整的减脂教程笔记
+语言风格就是小红书健身博主那种
+专业但不死板，有干货又好读
+
+品牌包装的默认定位是这样的：
+👤 目标人群：20-35岁想减肥塑形、改善体态的年轻人
+🎯 AI角色：资深小红书健身类博主
+
+封面图也是健身风格
+活力感满满💚
+
+工具还内置了健身号的变现路线：
+💰 运动品牌推广
+💰 私教课程销售
+💰 健身食品带货
+💰 体态评估服务
+
+从做内容到赚钱，一条龙！
+
+📌 运动系博主想体验？私信「健身」`,
+  tags: ['健身博主','减脂','健身教程','小红书健身','AI工具','自媒体工具'],
+  images: ['封面图（活力绿色调）','健身赛道界面','AI生成的减脂笔记','健身封面图效果','变现策略截图'],
+  tip: '健身赛道早上发效果好（适合运动打卡时段）。配图可以用绿色系活力感的风格。'
+},
+// ---- DAY 12 ----
+{
+  day: 12, week: 2, type: '赛道演示：穿搭👗', time: '20:00',
+  cover: '穿搭博主必备！AI一键生成OOTD笔记+搭配推荐',
+  title: '想做穿搭博主但不会写文案？这个AI工具拯救了我',
+  content: `穿搭号的姐妹快来！！👗
+
+拍了好看的OOTD
+但文案不知道怎么写？
+
+用这个AI工具体验了「穿搭」赛道——
+
+穿搭赛道8个分类：
+👔 日常穿搭 ｜ 💼 通勤OL ｜ 💕 约会穿搭 ｜ 🌤️ 季节穿搭
+👧 小个子 ｜ 🌸 微胖穿搭 ｜ ✨ 大牌平替 ｜ 💍 配饰搭配
+
+我选了「通勤OL」→ 点生成
+AI给了一条超专业的穿搭分享笔记！
+
+而且品牌化配置也很贴心：
+👤 目标人群：18-35岁爱美的女生，学生/上班族
+🎨 AI人设：资深小红书穿搭时尚博主
+📸 封面风格：时尚感，小红书穿搭博主调性
+
+变现策略直接列好了：
+💰 服装品牌推广
+💰 好物带货
+💰 穿搭咨询（1对1改造）
+💰 穿搭课程
+💰 直播试穿
+
+一键切换其他赛道也能用
+今天穿搭号 明天美食号
+一个工具搞定所有📌
+
+📌 穿搭博主想试？私信「穿搭」`,
+  tags: ['穿搭博主','OOTD','通勤穿搭','小红书穿搭','AI工具','时尚博主'],
+  images: ['封面图（紫色时尚调）','穿搭赛道界面','AI生成的OOTD笔记','穿搭封面图效果','8分类展示'],
+  tip: '穿搭号的女性用户比例最高。晚上20点发布效果最好（下班后刷穿搭的人多）。'
+},
+// ---- DAY 13 ----
+{
+  day: 13, week: 2, type: '赛道演示：科技数码📱', time: '12:00',
+  cover: '科技数码博主的内容生产线 AI帮你写评测笔记',
+  title: '做科技数码号的兄弟们！这个AI工具帮你批量写评测笔记',
+  content: `科技数码博主看过来📱
+
+写评测文写到词穷？
+这个AI工具的「科技数码」赛道可以帮到你！
+
+科技赛道8个分类：
+📱 手机评测 ｜ 💻 电脑数码 ｜ 🎁 好物推荐 ｜ 📲 App推荐
+📷 摄影技巧 ｜ 🏠 智能家居 ｜ 🎮 游戏 ｜ ⚡ 效率工具
+
+AI人设是「资深小红书科技数码博主」
+生成出来的文案专业又好读
+该有的参数对比、使用体验、购买建议全都有
+
+最适合这些场景：
+✅ 产品评测笔记（手机/耳机/平板）
+✅ App推荐合集
+✅ 好物种草
+✅ 效率工具分享
+
+目标人群定位：
+👤 18-35岁数码爱好者、学生、上班族
+
+变现路线：
+💰 品牌推广（数码品牌合作）
+💰 好物带货（挂链接）
+💰 付费教程（摄影/剪辑）
+💰 技术咨询
+
+工具切到科技赛道后
+所有配置自动变成科技风格
+封面图也是深色系科技感💫
+
+📌 科技博主私信「科技」体验`,
+  tags: ['科技数码','数码博主','手机评测','AI工具','好物推荐','科技分享'],
+  images: ['封面图（深色科技风）','科技赛道界面','AI生成的评测笔记','科技风封面图效果','变现路线截图'],
+  tip: '科技赛道的目标用户偏男性，可以适当在数码、极客类社区做推广引流。'
+},
+// ---- DAY 14 ----
+{
+  day: 14, week: 2, type: '第二周复盘', time: '20:30',
+  cover: '2周数据复盘：从0到XX粉，全靠这个工具',
+  title: '用AI工具运营小红书2周真实数据！附最受欢迎的功能排名',
+  content: `第二周数据来了📊
+
+📈 两周累计数据：
+• 发了 XX 条笔记（请替换真实数据）
+• 总曝光 XXXXX
+• 点赞 XXXX
+• 收藏 XXX
+• 粉丝从0到 XXX
+
+⭐ 最受关注的功能排名：
+1️⃣ AI一键生成笔记（私信提问最多）
+2️⃣ 6赛道一键切换（矩阵运营者最爱）
+3️⃣ 封面图自动生成（不会做图的救星）
+4️⃣ 品牌化包装（起号新手最需要）
+5️⃣ 最佳发布时间推荐（大家都没想到的功能）
+
+🎯 最受欢迎的赛道：
+1. 情感🌸（最多人做）
+2. 美食🍜（第二热门）
+3. 穿搭👗（女性用户多）
+
+💬 用户反馈精选：
+「用了之后每天省2个小时」
+「封面图功能太绝了」
+「品牌包装功能帮我一下子搞定了起号」
+
+🎁 下周预告：
+☐ 手把手教你从0起号完整教程
+☐ 变现策略详细拆解
+☐ 限时优惠活动来了！
+
+📌 还没体验的私信「体验」`,
+  tags: ['小红书运营','运营复盘','两周数据','自媒体成长','AI工具','涨粉记录'],
+  images: ['封面图（数据图表风格）','两周数据汇总截图','功能排名图','下周预告海报'],
+  tip: '⚠️ 替换所有X为真实数据。复盘帖核心是真实感，数据不好也可以讲"发现了什么问题+如何优化"。'
+},
+// ---- DAY 15 ----
+{
+  day: 15, week: 3, type: '从0起号教程（上篇）', time: '8:00',
+  cover: '小红书从0起号完整教程（上）建号+定位+包装',
+  title: '小红书起号教程 | 从0开始，AI帮你搞定建号+定位+包装（上篇）',
+  content: `很多姐妹问我「完全不会，怎么从0开始做小红书？」
+
+今天出一个保姆级教程！用工具步骤走一遍👇
+
+—— Step 1：选赛道 ——
+
+打开工具，6个赛道选一个最适合你的：
+🌸 情感（适合文字敏感、共情力强的人）
+🍜 美食（适合爱做饭/爱吃的人）
+✈️ 旅行（适合经常出去玩的人）
+💪 健身（适合有运动习惯的人）
+👗 穿搭（适合爱买衣服爱搭配的人）
+📱 科技（适合数码爱好者）
+
+选完之后工具会自动匹配：
+分类体系 + AI风格 + 封面风格 + 变现方向
+
+—— Step 2：品牌包装 ——
+
+进入「品牌化」功能：
+① 输入你想做的方向（或用默认值）
+② AI自动生成：
+   - 4种风格的账号名
+   - 头像图片
+   - 主页封面图
+   - 账号定位文案
+   - 目标人群描述
+   - 人设关键词
+
+以情感赛道为例，默认生成的定位：
+「温柔但有边界感，像一个清醒又会共情的朋友」
+
+—— Step 3：完善账号 ——
+
+把AI生成的素材设置到小红书账号里：
+✅ 头像 → AI生成的头像
+✅ 背景图 → AI生成的Banner
+✅ 简介 → AI生成的定位文案
+✅ 名字 → AI推荐的账号名
+
+💡 建号+包装，全程15分钟搞定！
+
+⬇️ 下篇讲「怎么用AI生成第一条笔记」
+记得收藏不迷路！`,
+  tags: ['小红书起号','新手教程','从0开始','账号定位','品牌包装','AI起号'],
+  images: ['封面图（教程系列上篇标识）','6赛道选择界面','品牌化功能操作步骤截图（3-4张）','完成效果展示'],
+  tip: '教程类内容收藏率极高。这条笔记和Day16的下篇是一个系列，注意在评论区互相引导。'
+},
+// ---- DAY 16 ----
+{
+  day: 16, week: 3, type: '从0起号教程（下篇）', time: '8:00',
+  cover: '小红书从0起号完整教程（下）生成笔记+发布',
+  title: '小红书起号教程 | AI生成第一条笔记+选时间发布（下篇）',
+  content: `接上篇！账号包装好了
+接下来该发第一条笔记了👇
+
+—— Step 4：生成第一条笔记 ——
+
+① 选一个分类
+   （比如情感赛道选「治愈」）
+② 点击「AI生成」
+③ 30秒后出来完整笔记：
+   📝 标题（自带爆款公式）
+   📝 正文（小红书语感）
+   📝 标签（精准匹配）
+
+④ 可以微调一下文案，加入你的个人感受
+   （AI生成80%+ 你个人输出20% = 最佳效果）
+
+—— Step 5：生成封面图 ——
+
+① 选择图片风格（5种可选）
+   推荐新手用「小红书风格」最保险
+② 点击生成
+③ 封面图直接可用！
+
+—— Step 6：选择最佳发布时间 ——
+
+工具会根据你选的分类推荐时段：
+比如选了「治愈」→ 推荐 22:00-23:00
+选了「成长」→ 推荐 07:00-08:00
+
+每个时段还有权重分数
+选分数最高的时间发！
+
+—— Step 7：发布 ——
+
+复制文案 → 打开小红书 → 上传封面图 → 粘贴文案 → 发布！
+
+💡 第一条笔记就这么搞定了！
+   全程15分钟，以前至少要2-3小时
+
+📌 收藏这条 + 上篇 = 完整从0起号教程
+📌 想要工具？私信「体验」`,
+  tags: ['小红书教程','新手起号','第一条笔记','AI生成','小红书攻略','保姆级教程'],
+  images: ['封面图（教程系列下篇标识）','生成笔记步骤截图（3张）','封面图生成截图','发布时间推荐截图','最终发布效果展示'],
+  tip: '下篇重点展示"从生成到发布"的完整流程。建议做一个录屏GIF放在第一张图。'
+},
+// ---- DAY 17 ----
+{
+  day: 17, week: 3, type: '变现策略深度拆解', time: '20:00',
+  cover: '小红书7种赚钱方式 从0到月入过万路线图',
+  title: '小红书怎么赚钱？这7种变现方法+4阶段路线图，全帮你规划好了',
+  content: `做小红书到底怎么赚钱？
+
+这个工具内置了完整的变现策略系统
+每个赛道都有7种变现方式+4阶段成长路线
+
+以情感赛道为例👇
+
+—— 7种变现方式 ——
+
+📢 广告合作（1000粉起，200-2000元/条）
+🌼 蒲公英平台（官方接单）
+💬 付费咨询（1对1情感咨询）
+📚 课程/电子书（知识付费）
+🎨 表情包/壁纸（数字产品）
+🎥 直播打赏
+📱 账号矩阵（多号运营）
+
+—— 4阶段成长路线 ——
+
+阶段1️⃣ 冷启动期（0-1000粉，1-2个月）
+→ 每天发2-3条 → 建立内容调性
+
+阶段2️⃣ 成长期（1000-5000粉）
+→ 开始接小广告 → 入驻蒲公英
+
+阶段3️⃣ 变现期（5000-20000粉）
+→ 稳定广告收入 → 开付费咨询/课程
+
+阶段4️⃣ 规模化（20000+粉）
+→ 矩阵运营 → 多线收入
+
+💡 6个赛道每个都有独立的变现策略
+   美食号的变现方式跟情感号完全不一样
+
+工具会告诉你：
+✅ 每种变现方式的门槛
+✅ 预期收入范围
+✅ 具体怎么做的Tips
+✅ 每个阶段该做什么任务
+
+📌 私信「变现」看你赛道的完整策略`,
+  tags: ['小红书变现','小红书赚钱','副业变现','自媒体赚钱','涨粉变现','变现策略'],
+  images: ['封面图（赚钱主题金色调）','7种变现方式列表','4阶段路线图','不同赛道变现对比','工具变现策略界面截图'],
+  tip: '变现类内容收藏率非常高！这条笔记的目的是让用户感受到"用了工具不仅能做内容，还有完整的赚钱规划"。'
+},
+// ---- DAY 18 ----
+{
+  day: 18, week: 3, type: '用户案例展示', time: '12:00',
+  cover: '用了这个工具之后 她的小红书数据变化',
+  title: '用户反馈：宝妈用AI工具做美食号，一个月从0到1000粉',
+  content: `今天分享一个真实用户的故事👇
+
+🙋‍♀️ 小美（化名）
+📌 身份：全职宝妈
+📌 想做：美食分享账号
+📌 痛点：不会写文案，没时间做图
+
+她找到我说想做小红书副业
+但每天带娃只有碎片时间
+
+我推荐她用这个AI工具——
+
+Step 1：选了「美食🍜」赛道
+Step 2：AI生成了账号包装
+Step 3：每天用碎片时间
+   → 选分类（家常菜/早餐/辅食）
+   → AI生成笔记 + 封面图
+   → 复制粘贴到小红书发布
+
+⏱️ 每天只花15分钟
+
+📊 一个月的结果：
+• 发了 28 条笔记
+• 粉丝从 0 → 1000+
+• 收到了第一个品牌合作邀请
+• 开始赚第一笔广告费
+
+她跟我说：
+「如果没有这个工具，我可能第一周就放弃了」
+「现在每天趁孩子午睡的时候花15分钟就搞定了」
+
+💡 关键不是工具有多厉害
+   而是它帮你降低了「开始」的门槛
+
+📌 想跟小美一样开始？私信「体验」`,
+  tags: ['宝妈副业','美食博主','AI工具','小红书运营','副业','从零开始','用户反馈'],
+  images: ['封面图（用户故事风格）','数据变化对比图','用户聊天截图（可模拟）','美食号效果展示'],
+  tip: '用户案例是最强的社会证明。如果还没有真实用户，可以自己用工具做一个美食号跑一周数据当案例。'
+},
+// ---- DAY 19 ----
+{
+  day: 19, week: 3, type: '对比型（省钱种草）', time: '20:00',
+  cover: '我算了一笔账：这工具帮我省了多少钱和时间',
+  title: '做小红书一年要花多少钱？算完这笔账我沉默了',
+  content: `做了一年小红书
+仔细算算我花了多少钱😵
+
+❌ 不用工具的成本：
+• Canva/稿定会员 → 199元/年
+• AI写作工具月费 → 49元/月 × 12 = 588元/年
+• 运营课程 → 299-999元
+• 标题灵感工具 → 99元/年
+• 数据分析工具 → 199元/年
+合计：1384-2084元/年 😱
+
+还不算你花的时间！
+每条笔记2小时 × 365天 = 730小时/年
+
+✅ 用这个AI工具：
+• 买断价 99元（不是月费！）
+• 包含：笔记生成+封面图+品牌包装+发布时间+变现策略
+• 6个赛道全包
+• 每条笔记15分钟 × 365天 = 91小时/年
+
+💰 省钱：至少省1200元/年
+⏰ 省时：每年省639小时（约80个工作日！）
+
+而且现在还有早鸟优惠
+前XX名只要49元！
+
+一条笔记的时间就能回本
+一年省下80个工作日
+
+你说值不值？
+
+📌 私信「体验」先免费试用
+   满意了再买，不花冤枉钱`,
+  tags: ['省钱','效率工具','小红书成本','工具对比','AI工具','性价比','自媒体工具'],
+  images: ['封面图（对比表格风格）','成本对比表格图','时间对比图','工具功能清单图'],
+  tip: '这种算账型内容转化率很高。重点把数字做得清晰、对比做得强烈。'
+},
+// ---- DAY 20 ----
+{
+  day: 20, week: 3, type: '干货教程（标题公式）', time: '7:30',
+  cover: '小红书标题公式 爆款标题都有这3个特征',
+  title: '研究了1000条爆款笔记，发现标题都有这3个共同点',
+  content: `为什么你的笔记没人点？
+90%的原因出在标题！！
+
+我研究了小红书1000条高赞笔记
+总结出3个爆款标题公式👇
+
+公式1️⃣：数字+痛点+解决方案
+例：「3个月涨粉10万的秘诀，只做了这1件事」
+例：「减脂20斤！我每天只花15分钟做了这套动作」
+
+公式2️⃣：反转/意外+好奇心
+例：「用AI写小红书笔记，没想到比自己写的还好」
+例：「这个99元的工具，帮我省了2000元/年」
+
+公式3️⃣：目标人群+痛点+情绪词
+例：「做小红书半年没赚钱的姐妹！你可能缺的就是这个」
+例：「宝妈副业首选！每天15分钟做美食号」
+
+💡 这些公式，AI工具已经帮你内置了！
+
+工具生成的标题会自动套用爆款公式
+你要做的就是从里面选一个最好的
+
+选完之后再配合「最佳发布时间」
+标题吸引人 + 时间精准 = 流量起飞📈
+
+📌 收藏这条，每次写标题之前看一遍
+📌 想让AI直接帮你写标题？私信「工具」`,
+  tags: ['小红书标题','爆款标题','标题公式','涨粉技巧','小红书运营','内容创作'],
+  images: ['封面图（标题公式清单）','3种公式示例图','AI生成标题效果截图','爆款标题案例集'],
+  tip: '纯干货型内容。前2张图做公式总结，后面放AI生成标题的效果截图做软植入。'
+},
+// ---- DAY 21 ----
+{
+  day: 21, week: 3, type: '第三周复盘 + 限时预告', time: '20:30',
+  cover: '3周复盘 + 重磅预告：限时特价来了🔥',
+  title: '第3周复盘：XX粉丝了！下周有一个重磅活动要告诉你们',
+  content: `3周了！来交作业📊
+
+📈 三周累计数据：（请替换真实数据）
+• 粉丝：XXX
+• 总笔记：XX条
+• 最高单条曝光：XXXX
+• 私信咨询：XX人
+• 已购买用户：XX人
+
+🏆 这周数据最好的笔记：
+（截图放在图片里了）
+
+📝 这周学到的：
+1. 场景化内容比纯功能展示效果好3倍
+2. 美食和穿搭赛道最吸引女性用户
+3. 变现策略类内容的收藏率最高
+
+‼️ 重磅预告 ‼️
+
+下周开始【限时早鸟活动】：
+🔥 个人版：原价99 → 限时49元
+🔥 专业版：原价299 → 限时199元
+🔥 前50名还额外赠送：
+   🎁 「6大赛道爆款笔记模板包」
+   🎁 「小红书运营避坑指南」
+   🎁 5天专属答疑
+
+名额只有50个！！
+
+📌 想要优惠的先私信「预约」
+   下周活动开始第一时间通知你`,
+  tags: ['周复盘','小红书运营','优惠活动','早鸟价','AI工具','限时优惠'],
+  images: ['封面图（复盘+预告双主题）','三周数据汇总','最佳笔记截图','限时活动预告海报'],
+  tip: '⚠️ 替换真实数据。这条笔记的关键是预告下周限时活动，制造期待感。引导用户私信「预约」锁定名额。'
+},
+// ---- DAY 22 ----
+{
+  day: 22, week: 4, type: '限时活动正式开始', time: '8:00',
+  cover: '🔥限时48小时 小红书AI运营工具早鸟价49元',
+  title: '🔥限时48小时！小红书AI运营工具早鸟价来了，错过恢复原价',
+  content: `说好的早鸟活动来了！！🔥🔥🔥
+
+⏰ 限时：48小时
+🔢 限量：前50名
+
+—— 活动价格 ——
+
+💎 个人版：99元 → 限时 49元
+   包含：全功能 / 6赛道 / 无限生成 / 永久使用
+
+👑 专业版：299元 → 限时 199元
+   包含：个人版全部 + 1v1起号指导 + 运营社群
+
+🏢 工作室版：599元 → 限时 399元
+   包含：专业版全部 + 可商用 + 技术支持
+
+—— 限量专属赠品 ——
+
+前50名额外赠送🎁：
+✅ 6大赛道爆款笔记模板包（价值99元）
+✅ 小红书运营避坑指南PDF（价值49元）
+✅ 5天1v1答疑（有问必答）
+
+—— 这个工具能帮你 ——
+
+✅ 30秒AI生成完整笔记
+✅ 5种风格封面图一键出图
+✅ AI品牌全案包装
+✅ 6大赛道一键切换
+✅ 48种发布时间精准推荐
+✅ 7种变现策略+4阶段路线图
+
+💡 买断制，49元永久用
+   不是月费不是年费！
+
+📌 私信「下单」立即购买
+📌 还没试用过？私信「体验」先免费试`,
+  tags: ['限时优惠','早鸟价','小红书工具','AI工具','自媒体工具','小红书运营'],
+  images: ['封面图（促销红色风格）','三个版本价格对比图','功能清单图','赠品展示图','紧迫感倒计时图'],
+  tip: '活动帖要同时在早上8:00和晚上20:00各发一次（晚上的改标题为倒计时版）。文案要制造紧迫感和稀缺感。'
+},
+// ---- DAY 23 ----
+{
+  day: 23, week: 4, type: '倒计时催单 + FAQ', time: '20:00',
+  cover: '还剩XX个名额！49元早鸟价倒计时⏰',
+  title: '早鸟价只剩XX个名额了！犹豫的姐妹看完这条做决定',
+  content: `早鸟活动过半了！
+来回答一下大家问最多的问题👇
+
+❓ Q1：跟其他AI写作工具有什么区别？
+→ 专门为小红书设计的运营平台
+→ 从起号包装→内容生成→发布时间→变现策略 全覆盖
+→ 而且支持6种赛道，其他工具不区分赛道
+
+❓ Q2：需要技术基础吗？
+→ 完全不需要！会打字就能用
+→ 选赛道→选分类→点生成→复制发布
+→ 小白友好度拉满
+
+❓ Q3：49元和199元的区别？
+→ 49元个人版：工具全功能，自己用
+→ 199元专业版：多了1v1指导+运营社群
+→ 完全没经验建议专业版
+
+❓ Q4：能退款吗？
+→ 提供免费体验版，先试后买
+→ 购买后如不满意，3天内可退
+
+❓ Q5：多久能回本？
+→ 按省时间算：每天省1.5小时 × 时薪30 = 45元/天
+→ 第2天就回本了
+
+🔢 目前已有XX人购买
+⏰ 早鸟价剩余名额：XX个
+
+📌 私信「下单」锁定优惠`,
+  tags: ['限时优惠','FAQ','小红书工具','AI工具','早鸟价','小红书运营'],
+  images: ['封面图（倒计时风格）','FAQ图文卡片（5张，一问一答）'],
+  tip: 'FAQ类内容帮助犹豫的用户做决定。将常见疑虑一一击破是促成转化的关键。'
+},
+// ---- DAY 24 ----
+{
+  day: 24, week: 4, type: '买家秀/用户反馈合集', time: '12:00',
+  cover: '用户反馈来了 看看大家怎么说',
+  title: '收到好多反馈了！用AI工具做小红书的真实体验合集',
+  content: `早鸟活动开始以来
+收到了好多用户的反馈💬
+
+今天整理一波真实评价👇
+
+—— 用户A（情感博主）——
+「以前想破脑袋也写不出治愈文案
+ 现在AI一生成就很有感觉
+ 我再微调一下就能发了，太省时间」
+
+—— 用户B（宝妈做美食号）——
+「每天趁娃午睡15分钟生成2条笔记
+ 一周涨了200粉
+ 第一次觉得做自媒体没那么难」
+
+—— 用户C（做矩阵的）——
+「6个赛道切换太爽了
+ 我同时做3个号，效率翻了3倍
+ 以前每个号要用不同的工具」
+
+—— 用户D（穿搭博主）——
+「封面图功能是惊喜
+ 以前一张封面至少30分钟
+ 现在一键生成，风格还很好看」
+
+—— 用户E（科技数码博主）——
+「评测文案写得比我还专业
+ AI的人设是'资深科技数码博主'
+ 出来的东西真的有那个味」
+
+💡 最多人夸的3个功能：
+1️⃣ AI笔记生成
+2️⃣ 封面图一键出图
+3️⃣ 6赛道一键切换
+
+⏰ 早鸟49元还剩XX个名额
+
+📌 私信「体验」先试用 → 满意再买`,
+  tags: ['用户反馈','真实评价','小红书工具','AI工具','口碑','自媒体工具'],
+  images: ['封面图（用户评价合集风格）','5个用户反馈截图/卡片（每人一张）'],
+  tip: '社会证明是最强的转化武器。如果还没有真实反馈，可以找朋友体验后收集真实评价。'
+},
+// ---- DAY 25 ----
+{
+  day: 25, week: 4, type: '完整工作流教程', time: '8:00',
+  cover: '用这个工具每天运营小红书的完整流程',
+  title: '我每天只花15分钟运营小红书，这是我的完整工作流',
+  content: `很多人问我每天怎么用这个工具运营小红书？
+今天把我的完整流程分享出来📋
+
+—— 每日15分钟工作流 ——
+
+⏰ 第1分钟：打开工具，确认当前赛道
+
+⏰ 第2-3分钟：选分类 + 生成笔记
+   → 30秒出完整笔记
+
+⏰ 第4-8分钟：微调文案
+   → AI写了80%的框架
+   → 加入你的个人观点/经历
+   → 让内容更真实有温度
+
+⏰ 第9-11分钟：生成封面图
+   → 选风格 → 生成 → 满意的直接用
+
+⏰ 第12-13分钟：查看最佳发布时间
+   → 选分数最高的时间段
+
+⏰ 第14-15分钟：复制粘贴到小红书发布
+   → 搞定收工✅
+
+💡 一天做2条：30分钟
+💡 一天做3条：45分钟
+
+对比没工具：每条2-3小时
+
+—— 如果是矩阵运营 ——
+操作完一个号→切换赛道→再来一轮
+5个号也就1个多小时
+
+📌 想要这个工作流？私信「体验」`,
+  tags: ['小红书工作流','运营流程','效率','15分钟','AI运营','自媒体日常'],
+  images: ['封面图（流程图风格）','15分钟工作流时间轴图','工具操作步骤截图（4-5张）','效率对比图'],
+  tip: '实操性强的内容。建议做一张"15分钟时间轴"信息图作为第一张配图。'
+},
+// ---- DAY 26 ----
+{
+  day: 26, week: 4, type: '代运营/商用场景', time: '20:00',
+  cover: '代运营工作室如何用AI工具提效降本',
+  title: '代运营的朋友看过来！这个工具能帮你每月多接3个客户',
+  content: `做小红书代运营的朋友们👋
+
+你们最大的瓶颈是什么？
+→ 人手不够！每个客户都需要专人负责内容
+
+这个工具可以解决💡
+
+—— 代运营场景 ——
+
+客户A：美食号
+→ 切到🍜美食赛道 → 15分钟搞定内容
+
+客户B：穿搭号
+→ 切到👗穿搭赛道 → 又15分钟搞定
+
+客户C：情感号
+→ 切到🌸情感赛道 → 再15分钟搞定
+
+以前一个运营只能负责2-3个客户
+现在一个人可以负责5-8个客户
+
+💰 算一笔账：
+代运营收费：2000-5000元/月/客户
+多接3个客户 = 多赚6000-15000元/月
+工具成本：399-999元（一次性买断）
+
+—— 工作室版特权 ——
+
+🏢 599元工作室版包含：
+✅ 全功能 + 6赛道
+✅ 可商用授权
+✅ 优先技术支持
+✅ 专属运营社群
+
+📌 代运营团队私信「工作室」了解详情`,
+  tags: ['代运营','小红书代运营','MCN','运营工作室','降本增效','AI工具'],
+  images: ['封面图（商务蓝色风格）','代运营效率对比图','工作室版功能清单','算账图表'],
+  tip: '代运营和MCN是高客单价用户群。这条笔记的号召力要对准"多接客户多赚钱"这个痛点。'
+},
+// ---- DAY 27 ----
+{
+  day: 27, week: 4, type: '分销代理招募', time: '12:00',
+  cover: '招分销代理！卖一单赚50% 躺着赚被动收入',
+  title: '想靠卖工具赚钱吗？招分销代理，佣金50%！',
+  content: `除了自己用，你还可以靠卖这个工具赚钱💰
+
+现在招募分销代理👇
+
+—— 代理权益 ——
+
+💎 成为代理：1999元（包含工具使用权）
+💰 佣金：每单50%
+📱 个人版卖出一单 = 赚49.5元
+👑 专业版卖出一单 = 赚149.5元
+🏢 工作室版卖出一单 = 赚299.5元
+
+—— 代理支持 ——
+
+✅ 全套推广素材（图片+文案+话术）
+✅ 专属代理群（运营指导）
+✅ 独立推广链接（自动统计业绩）
+✅ 代理专属价
+
+—— 算一笔账 ——
+
+每天卖1单个人版 = 49.5元
+一个月 = 1485元
+
+每天卖1单专业版 = 149.5元
+一个月 = 4485元
+
+—— 适合谁做代理 ——
+
+✅ 自媒体/运营类博主
+✅ 副业交流群群主
+✅ 运营培训讲师
+✅ 工具测评博主
+✅ 任何想多一份收入的人
+
+📌 想了解代理？私信「代理」`,
+  tags: ['分销代理','赚钱','被动收入','副业','卖工具','分销'],
+  images: ['封面图（赚钱主题金色调）','佣金计算表','代理权益清单图','收入预估图'],
+  tip: '这条笔记面向想做副业的人群。重点展示"低门槛+高佣金+被动收入"的吸引力。'
+},
+// ---- DAY 28 ----
+{
+  day: 28, week: 4, type: '赛道排名干货', time: '8:00',
+  cover: '2026年小红书6大赚钱赛道排名 第1名你想不到',
+  title: '2026年小红书6大赚钱赛道排名！第1名竟然是它',
+  content: `想做小红书不知道选哪个赛道？
+
+我根据变现难度、竞争程度、粉丝价值
+做了一个2026年赛道排名👇
+
+第6名：科技数码 📱
+💰 变现：品牌推广、好物带货
+⭐ 推荐指数：⭐⭐⭐
+
+第5名：旅行 ✈️
+💰 变现：酒店合作、旅拍、攻略付费
+⭐ 推荐指数：⭐⭐⭐
+
+第4名：健身 💪
+💰 变现：品牌推广、私教、食品带货
+⭐ 推荐指数：⭐⭐⭐⭐
+
+第3名：穿搭 👗
+💰 变现：带货、品牌推广、穿搭咨询
+⭐ 推荐指数：⭐⭐⭐⭐
+
+第2名：美食 🍜
+💰 变现：探店、品牌推广、团购带货
+⭐ 推荐指数：⭐⭐⭐⭐⭐
+
+第1名：情感 🌸
+💰 变现：广告、咨询、课程、壁纸
+⭐ 推荐指数：⭐⭐⭐⭐⭐
+
+💡 不管选哪个赛道
+   这个AI工具都支持一键切换
+   6个赛道的内容生成+变现策略全包
+
+📌 评论区告诉我你想做哪个赛道？
+📌 私信「体验」免费试用工具`,
+  tags: ['小红书赛道','赚钱赛道','2026小红书','副业选赛道','自媒体方向'],
+  images: ['封面图（排名榜单风格）','6大赛道排名信息图','每个赛道详情卡片','工具6赛道展示截图'],
+  tip: '排名/榜单类内容小红书互动率极高（用户喜欢在评论区讨论）。标题的"第1名你想不到"是好奇心钩子。'
+},
+// ---- DAY 29 ----
+{
+  day: 29, week: 4, type: '最后催单 + 涨价预告', time: '20:00',
+  cover: '最后通知！49元早鸟价明天恢复原价',
+  title: '最后一天！明天开始恢复原价，49元早鸟价最后XX个名额',
+  content: `这是今天最重要的一条笔记‼️
+
+49元早鸟价明天就结束了
+恢复原价99元
+
+—— 你将得到 ——
+
+一个工具包含：
+✅ AI一键生成小红书笔记
+✅ 5种风格封面图自动生成
+✅ AI品牌全案包装
+✅ 6大赛道一键切换
+✅ 48种精准发布时间推荐
+✅ 7种变现策略 + 4阶段成长路线
+✅ 买断制永久使用
+
+6个赛道全覆盖：
+🌸 情感 ｜ 🍜 美食 ｜ ✈️ 旅行
+💪 健身 ｜ 👗 穿搭 ｜ 📱 科技
+
+限量赠品（前50名）：
+🎁 6大赛道爆款笔记模板包
+🎁 小红书运营避坑指南
+🎁 5天1v1答疑
+
+💡 49元 = 一杯奶茶的钱
+   却能每天帮你省2小时
+
+明天恢复原价后不知道什么时候再降
+
+📌 私信「下单」立即购买
+📌 先体验：私信「体验」`,
+  tags: ['最后一天','限时优惠','早鸟价','小红书工具','AI运营','今日必看'],
+  images: ['封面图（紧急红色风格）','功能汇总清单图','价格对比图（49vs99）','赠品展示','最后倒计时海报'],
+  tip: '最后催单帖！早上8:00和晚上20:00各发一版，晚上版加"最后X小时"倒计时。私信回复速度要快。'
+},
+// ---- DAY 30 ----
+{
+  day: 30, week: 4, type: '月度总复盘', time: '20:30',
+  cover: '30天从0开始 用AI工具运营小红书月度总复盘',
+  title: '30天运营复盘！从0到XXX粉丝，分享我的全部数据和经验',
+  content: `一个月了！来一个完整的复盘📊
+
+—— 30天核心数据 ——（请替换真实数据）
+
+📱 发布笔记：30条
+👥 粉丝增长：0 → XXX
+❤️ 总点赞：XXXX
+⭐ 总收藏：XXXX
+💬 总评论：XXX
+💰 工具销售：XX单
+💰 本月收入：XXXX元
+
+—— 数据最好的3条笔记 ——
+
+1️⃣ Day 01 效果展示型（曝光最高）
+2️⃣ Day 17 变现策略拆解（收藏最多）
+3️⃣ Day 19 省钱对比型（转化最高）
+
+—— 我学到的5个经验 ——
+
+1. 效果展示型笔记永远是最有效的
+2. 每个赛道单独演示 > 笼统介绍
+3. 痛点共鸣型内容互动率最高
+4. 限时优惠真的能催转化
+5. 免费体验是降低决策门槛的关键
+
+—— 下月计划 ——
+
+✅ 开始录制「小红书AI运营课」
+✅ 开放分销代理
+✅ 新增更多赛道
+✅ 挑战月收入5000元
+
+这一个月证明了：
+💡 一个人 + 一个AI工具 = 完全可以从0开始赚钱
+
+感谢每一位支持的朋友🙏
+
+📌 新朋友：私信「体验」免费试用
+📌 想跟着做：私信「社群」进运营群`,
+  tags: ['月度复盘','30天挑战','小红书运营','AI运营','粉丝增长','自媒体复盘'],
+  images: ['封面图（里程碑庆祝风格）','30天数据汇总大图','最佳笔记Top3截图','下月计划清单图','感谢粉丝的结尾图'],
+  tip: '⚠️ 替换所有X为真实数据。月度复盘是建立信任的重要内容，即使数据不够好也要真实分享。这条笔记也是下一个月内容的"起点"。'
+}
+];
+
+// ========== 全局状态 ==========
+let currentDay = 1;
+let startDate = null;
+let completedDays = [];
+
+function init() {
+  // 直接用当前时间作为开始日期
+  startDate = new Date();
+  
+  // 计算今天是第几天
+  const now = new Date();
+  const diff = Math.floor((now - startDate) / 86400000) + 1;
+  currentDay = Math.max(1, Math.min(30, diff));
+  
+  renderWeekTabs();
+  renderDayGrid();
+  renderPost(currentDay);
+  updateStats();
+}
+
+function renderWeekTabs() {
+  const weeks = [
+    { n: 1, label: '第一周 · 破冰期', days: '1-7' },
+    { n: 2, label: '第二周 · 种草期', days: '8-14' },
+    { n: 3, label: '第三周 · 转化期', days: '15-21' },
+    { n: 4, label: '第四周 · 冲刺期', days: '22-30' },
+  ];
+  const cw = POSTS[currentDay - 1].week;
+  document.getElementById('weekTabs').innerHTML = weeks.map(w =>
+    `<div class="week-tab${w.n === cw ? ' active' : ''}" onclick="jumpWeek(${w.n})">${w.label}</div>`
+  ).join('');
+}
+
+function jumpWeek(w) {
+  const firstDay = w === 1 ? 1 : w === 2 ? 8 : w === 3 ? 15 : 22;
+  selectDay(firstDay);
+}
+
+function renderDayGrid() {
+  const cw = POSTS[currentDay - 1].week;
+  const days = POSTS.filter(p => p.week === cw);
+  const now = new Date();
+  const todayNum = Math.floor((now - startDate) / 86400000) + 1;
+  
+  document.getElementById('dayGrid').innerHTML = days.map(p => {
+    const isActive = p.day === currentDay;
+    const isToday = p.day === todayNum;
+    const isDone = completedDays.includes(p.day);
+    return `<div class="day-btn${isActive ? ' active' : ''}${isToday ? ' today' : ''}" onclick="selectDay(${p.day})">
+      ${isToday ? '<div class="today-dot"></div>' : ''}
+      <div class="day-num">${isDone ? '✅' : p.day}</div>
+      <div class="day-type">${p.type}</div>
+    </div>`;
+  }).join('');
+}
+
+function selectDay(d) {
+  currentDay = d;
+  renderWeekTabs();
+  renderDayGrid();
+  renderPost(d);
+  updateStats();
+}
+
+function navigate(dir) {
+  const nd = currentDay + dir;
+  if (nd >= 1 && nd <= 30) selectDay(nd);
+}
+
+function renderPost(d) {
+  const p = POSTS[d - 1];
+  document.getElementById('dayCircle').textContent = d;
+  document.getElementById('dayTitle').textContent = `DAY ${String(d).padStart(2, '0')}`;
+  document.getElementById('dayType').textContent = p.type;
+  document.getElementById('postTime').textContent = `${p.time} 发布`;
+  
+  document.getElementById('prevBtn').disabled = d <= 1;
+  document.getElementById('nextBtn').disabled = d >= 30;
+  
+  const now = new Date();
+  const todayNum = Math.floor((now - startDate) / 86400000) + 1;
+  document.getElementById('todayBadge').textContent = `📌 今天是第 ${Math.max(1, Math.min(30, todayNum))} 天 · 当前查看第 ${d} 天`;
+  document.getElementById('statWeek').textContent = p.week;
+  
+  // Build body
+  let html = '';
+  
+  // Cover
+  html += `<div class="section">
+    <div class="section-title"><i>🖼️</i> 封面图文案</div>
+    <div class="cover-text" id="coverText">${p.cover}</div>
+  </div>`;
+  
+  // Title
+  html += `<div class="section">
+    <div class="section-title"><i>📌</i> 笔记标题</div>
+    <div class="post-title-text" id="titleText">${p.title}</div>
+  </div>`;
+  
+  // Content
+  html += `<div class="section">
+    <div class="section-title"><i>📝</i> 笔记正文</div>
+    <div class="post-content" id="contentText">${p.content}</div>
+  </div>`;
+  
+  // Tags
+  html += `<div class="section">
+    <div class="section-title"><i>🏷️</i> 标签</div>
+    <div class="tags-area">${p.tags.map(t => `<span class="tag">#${t}</span>`).join('')}</div>
+  </div>`;
+  
+  // Images
+  html += `<div class="section">
+    <div class="section-title"><i>📸</i> 配图说明（${p.images.length}张）</div>
+    <ul class="img-list">${p.images.map((img, i) => `<li>图${i + 1}：${img}</li>`).join('')}</ul>
+  </div>`;
+  
+  document.getElementById('postBody').innerHTML = html;
+  
+  // Copy buttons
+  document.getElementById('copyBar').innerHTML = `
+    <button class="copy-btn" onclick="copyText('title')">📋 复制标题</button>
+    <button class="copy-btn" onclick="copyText('content')">📋 复制正文</button>
+    <button class="copy-btn" onclick="copyText('tags')">📋 复制标签</button>
+    <button class="copy-btn" onclick="copyText('all')">📋 一键复制全部</button>
+    <button class="copy-btn" onclick="toggleDone(${d})" id="doneBtn${d}" style="${completedDays.includes(d)?'background:var(--green);color:#fff;border-color:var(--green)':''}">${completedDays.includes(d)?'✅ 已发布':'📤 标记已发布'}</button>
+  `;
+  
+  // Sidebar checklist
+  const tasks = [
+    `准备封面图素材`,
+    `复制标题和正文`,
+    `在 ${p.time} 准时发布`,
+    `发布后20分钟回复评论`,
+    `搜索关键词做评论截流`,
+  ];
+  const tasksDone = (window._tasks && window._tasks[d]) ? window._tasks[d] : [];
+  document.getElementById('checklist').innerHTML = tasks.map((t, i) =>
+    `<li class="${tasksDone.includes(i)?'done':''}" onclick="toggleTask(${d},${i})"><span class="check">${tasksDone.includes(i)?'✓':''}</span>${t}</li>`
+  ).join('');
+  const pct = Math.round(tasksDone.length / tasks.length * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  
+  // Tip
+  document.getElementById('tipBox').innerHTML = `<strong>💡 今日要点：</strong><br>${p.tip}`;
+}
+
+function copyText(type) {
+  const p = POSTS[currentDay - 1];
+  const ov = (typeof aiOverrides !== 'undefined') ? aiOverrides[currentDay] : null;
+  let text = '';
+  if (type === 'title') text = (ov && ov.title) || p.title;
+  else if (type === 'content') text = (ov && ov.content) || p.content;
+  else if (type === 'tags') text = (ov && ov.tags) ? ov.tags.map(t => '#' + t).join(' ') : p.tags.map(t => '#' + t).join(' ');
+  else if (type === 'all') {
+    const t = (ov && ov.title) || p.title;
+    const c = (ov && ov.content) || p.content;
+    const tg = (ov && ov.tags) ? ov.tags.map(x => '#' + x).join(' ') : p.tags.map(x => '#' + x).join(' ');
+    text = t + '\n\n' + c + '\n\n' + tg;
+  }
+  
+  navigator.clipboard.writeText(text).then(() => showToast('✅ 已复制到剪贴板')).catch(() => {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('✅ 已复制到剪贴板');
+  });
+}
+
+function toggleDone(d) {
+  if (completedDays.includes(d)) {
+    completedDays = completedDays.filter(x => x !== d);
+  } else {
+    completedDays.push(d);
+  }
+  renderDayGrid();
+  renderPost(d);
+  updateStats();
+}
+
+function toggleTask(day, idx) {
+  if (!window._tasks) window._tasks = {};
+  let done = window._tasks[day] || [];
+  if (done.includes(idx)) done = done.filter(x => x !== idx);
+  else done.push(idx);
+  window._tasks[day] = done;
+  renderPost(day);
+}
+
+function updateStats() {
+  document.getElementById('statDone').textContent = completedDays.length;
+  document.getElementById('statProgress').textContent = Math.round(completedDays.length / 30 * 100) + '%';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// Init
+init();
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft') navigate(-1);
+  if (e.key === 'ArrowRight') navigate(1);
+});
+
+// ========== Gemini AI Integration ==========
+
+// 工具完整功能描述（提供给 Gemini 作为上下文）
+const TOOL_CONTEXT = `
+你正在为一个"小红书AI运营管理平台"撰写推广内容。这个工具的核心功能如下：
+
+【产品简介】
+一个专为小红书设计的AI运营工具，支持6种账号赛道一键切换，帮助博主高效生产内容。
+
+【6大赛道】
+1. 🌸 情感赛道 — 分类：治愈/成长/爱情/友情/自我/离别/温暖/释怀 — 目标：20-35岁女生
+2. 🍜 美食赛道 — 分类：家常菜/烘焙/探店/减脂餐/甜品/早餐/宵夜/饮品 — 目标：20-40岁
+3. ✈️ 旅行赛道 — 分类：城市探索/徒步/住宿推荐/穷游攻略/亲子游/旅拍/自驾游/美食旅行
+4. 💪 健身赛道 — 分类：减脂/增肌/瑜伽/跑步/居家健身/饮食搭配/体态矫正/健身穿搭
+5. 👗 穿搭赛道 — 分类：日常穿搭/通勤OL/约会穿搭/季节穿搭/小个子/微胖穿搭/大牌平替/配饰
+6. 📱 科技数码赛道 — 分类：手机评测/电脑数码/好物推荐/App推荐/摄影技巧/智能家居/游戏/效率工具
+
+【核心功能】
+- AI一键生成完整笔记（标题+正文+标签），30秒出结果
+- 5种封面图风格AI生成（小红书风格/极简文艺/水彩插画/渐变文字/摄影风）
+- AI品牌化包装（生成账号名4种风格+头像+主页封面+定位文案+关键词）
+- 最佳发布时间推荐（6赛道×8分类=48种独立时段推荐，加权分数算法）
+- 7种变现策略+4阶段成长路线图（每个赛道独立配置）
+- 赛道一键切换，所有AI提示词/分类/风格/变现策略自动随赛道变化
+- 纯前端部署，买断制，永久使用
+
+【定价】
+- 个人版 99元（限时早鸟49元）/ 专业版 299元 / 工作室版 599元
+- 买断制不是月费
+
+【目标用户】
+小红书新手博主、矩阵运营者、MCN机构、代运营工作室、副业博主、电商运营
+`;
+
+const TRACK_DETAILS = {
+  all: '综合展示6大赛道',
+  emotion: '🌸 情感赛道（治愈/成长/爱情/友情/自我/离别/温暖/释怀），目标用户20-35岁女生，AI人设是资深情感类博主，变现方式包括广告/蒲公英/付费咨询/课程/壁纸表情包/直播/矩阵',
+  food: '🍜 美食赛道（家常菜/烘焙/探店/减脂餐/甜品/早餐/宵夜/饮品），目标用户20-40岁爱做饭的人/宝妈/上班族，变现方式包括品牌推广/食谱电子书/团购带货/探店合作/直播做饭',
+  travel: '✈️ 旅行赛道（城市探索/徒步/住宿推荐/穷游攻略/亲子游/旅拍/自驾游/美食旅行），变现方式包括酒店民宿合作/攻略付费/旅拍约拍/直播旅行',
+  fitness: '💪 健身赛道（减脂/增肌/瑜伽/跑步/居家健身/饮食搭配/体态矫正/健身穿搭），目标用户20-35岁想减肥塑形的年轻人，变现方式包括运动品牌推广/私教课程/健身食品带货/体态评估',
+  fashion: '👗 穿搭赛道（日常穿搭/通勤OL/约会穿搭/季节穿搭/小个子/微胖穿搭/大牌平替/配饰），目标用户18-35岁爱美女生，变现方式包括服装品牌推广/好物带货/穿搭咨询/直播试穿',
+  tech: '📱 科技数码赛道（手机评测/电脑数码/好物推荐/App推荐/摄影技巧/智能家居/游戏/效率工具），目标用户18-35岁数码爱好者，变现方式包括品牌推广/好物带货/付费教程/技术咨询'
+};
+
+const GEN_TYPE_PROMPTS = {
+  effect: '效果展示型笔记：重点展示工具的实际使用效果和操作过程，让用户直观感受到工具的价值',
+  pain: '痛点共鸣型笔记：从用户做小红书遇到的痛点切入（不会写文案/不会做封面/不知道发什么时间/不知道怎么变现），引出工具作为解决方案',
+  tutorial: '教程干货型笔记：提供实用的小红书运营干货知识，自然植入工具作为辅助',
+  compare: '对比测评型笔记：将手动运营vs使用工具做对比（时间/效率/效果/成本），突出工具优势',
+  case: '用户案例型笔记：讲述用户使用工具后的变化和成果故事，增强社会证明',
+  monetize: '变现攻略型笔记：分享小红书变现方法，重点展示工具内置的变现策略和成长路线功能',
+  trend: '热点结合型笔记：结合当前小红书平台热点话题，自然融入工具推广'
+};
+
+// ===== API 调用 =====
+
+// 缓存key避免重复读取
+let _cachedApiKey = null;
+function getApiKey() {
+  if (_cachedApiKey !== null && _cachedApiKey !== '') return _cachedApiKey;
+  // 1. 先尝试从本地 gemini_key.txt 读取
+  try {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', 'gemini_key.txt', false);
+    xhr.send(null);
+    if (xhr.status === 0 || xhr.status === 200) {
+      let line = (xhr.responseText || '').split('\n')[0].trim();
+      if (line.includes('=')) line = line.split('=').slice(1).join('=').trim();
+      if (line && line.length > 10) { _cachedApiKey = line; return line; }
+    }
+  } catch (e) {
+    console.warn('XHR读取gemini_key.txt失败(Chrome file://协议限制)', e);
+  }
+  // 2. 备用：从页面输入框读取（支持手动输入）
+  const inputEl = document.getElementById('geminiApiKey');
+  if (inputEl && inputEl.value && inputEl.value.length > 10 && !inputEl.value.startsWith('*')) {
+    _cachedApiKey = inputEl.value.trim();
+    return _cachedApiKey;
+  }
+  return '';
+}
+
+function saveApiKey() {
+  const inputEl = document.getElementById('geminiApiKey');
+  const val = inputEl?.value?.trim();
+  if (val && val.length > 10 && !val.startsWith('*')) {
+    _cachedApiKey = val;
+    updateKeyStatus();
+    showToast('✅ API Key 已保存（本次会话有效）');
+  } else {
+    showToast('⚠️ 请在输入框粘贴有效的 API Key，或在同目录 gemini_key.txt 中填写');
+  }
+}
+
+function updateKeyStatus() {
+  const key = getApiKey();
+  const el = document.getElementById('keyStatus');
+  const input = document.getElementById('geminiApiKey');
+  if (key) {
+    el.className = 'key-status key-ok';
+    el.textContent = '✅ 已配置';
+    // 如果key来自文件，禁用输入框
+    if (_cachedApiKey && input.value !== _cachedApiKey) {
+      input.value = '************';
+      input.disabled = true;
+    }
+  } else {
+    el.className = 'key-status key-no';
+    el.textContent = '❌ 未配置 - 请粘贴API Key或在gemini_key.txt填写';
+    input.disabled = false;
+    input.value = '';
+  }
+}
+
+async function callGemini(prompt, useSearch = true) {
+  const key = getApiKey();
+  if (!key) { showToast('❌ 请先配置 Gemini API Key'); throw new Error('No API key'); }
+
+  // 文本生成用 gemini-2.5-flash
+  const model = 'gemini-2.5-flash';
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+
+  const body = {
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: {
+      temperature: 0.9,
+      maxOutputTokens: 8192,
+    }
+  };
+
+  // 开启 Google Search grounding
+  if (useSearch) {
+    body.tools = [{ google_search: {} }];
+  }
+
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    const msg = err?.error?.message || `API 错误 ${resp.status}`;
+    throw new Error(msg);
+  }
+
+  const data = await resp.json();
+  const text = data?.candidates?.[0]?.content?.parts
+    ?.filter(p => p.text)
+    ?.map(p => p.text)
+    ?.join('\n') || '（未返回结果）';
+  return text;
+}
+
+// ===== UI 逻辑 =====
+
+function toggleAIPanel() {
+  const body = document.getElementById('aiPanelBody');
+  const icon = document.getElementById('aiToggleIcon');
+  body.classList.toggle('open');
+  icon.classList.toggle('open');
+  if (body.classList.contains('open')) updateKeyStatus();
+}
+
+function switchAITab(tab) {
+  // 移除所有tab和section的active
+  document.querySelectorAll('.ai-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.ai-section').forEach(s => s.classList.remove('active'));
+  // 激活目标section
+  const tabEl = document.getElementById('tab-' + tab);
+  if (tabEl) tabEl.classList.add('active');
+  // 高亮对应的tab按钮
+  const tabs = ['profile','search','generate','optimize','strategy','faq'];
+  const idx = tabs.indexOf(tab);
+  if (idx >= 0) document.querySelectorAll('.ai-tab')[idx]?.classList.add('active');
+  if (tab === 'optimize') document.getElementById('optDayNum').textContent = currentDay;
+  if (tab === 'faq') renderFAQ();
+}
+
+function fillSearch(q) {
+  document.getElementById('searchQuery').value = q;
+}
+
+function setLoading(id, show) {
+  document.getElementById(id).classList.toggle('show', show);
+}
+
+// ===== 1. 热点搜索 =====
+async function geminiSearch() {
+  const query = document.getElementById('searchQuery').value.trim();
+  if (!query) { showToast('请输入搜索内容'); return; }
+
+  const btn = document.getElementById('searchBtn');
+  btn.disabled = true;
+  setLoading('searchLoading', true);
+  document.getElementById('searchResult').classList.remove('show');
+
+  try {
+    const prompt = `你是一个资深的小红书运营和推广专家。请联网搜索以下主题的最新信息：
+
+搜索主题：${query}
+
+请提供：
+1. 【最新趋势】当前小红书平台上关于这个话题的最新趋势和变化
+2. 【爆款分析】近期相关的爆款笔记有哪些特征（标题特征、内容结构、互动数据特征）
+3. 【实操建议】基于搜索结果，给出3-5条具体可执行的建议
+4. 【热门关键词】目前与此话题相关的热搜词和标签
+5. 【参考案例】列举2-3个具体的成功案例
+
+请用简洁清晰的格式回答，多用emoji让内容更生动。`;
+
+    const result = await callGemini(prompt, true);
+    document.getElementById('searchResultBody').textContent = result;
+    document.getElementById('searchResult').classList.add('show');
+  } catch (e) {
+    showToast('❌ ' + e.message);
+  } finally {
+    btn.disabled = false;
+    setLoading('searchLoading', false);
+  }
+}
+
+// ===== 2. AI生成笔记 =====
+async function geminiGenerate(withSearch = false) {
+  const genType = document.getElementById('genType').value;
+  const genTrack = document.getElementById('genTrack').value;
+  const genExtra = document.getElementById('genExtra').value.trim();
+
+  const btn = document.getElementById('genBtn');
+  const btn2 = document.getElementById('genSearchBtn');
+  btn.disabled = btn2.disabled = true;
+  setLoading('genLoading', true);
+  document.getElementById('genResult').classList.remove('show');
+
+  try {
+
+    const prompt = `${TOOL_CONTEXT}
+
+  请你以小红书顶级运营专家和Gemini大模型的身份，生成一条推广我的AI运营工具的爆款笔记，必须严格分为以下4大部分输出：
+
+  【1. Gemini大模型的分析与经验】
+  请联网分析2026年小红书平台的推广趋势、爆款规律、平台算法变化，并结合你作为大模型的经验，总结当前最有效的推广方法（不少于3条，带emoji）。
+
+  【2. Gemini基于本工具特点的总结】
+  请详细分析本工具的独特功能、适用人群、变现优势、与竞品的差异化亮点，提炼3-5个核心卖点（带emoji）。
+
+  【3. 大模型联网分析他人推广方式】
+  请联网搜索小红书上同类AI运营工具的推广案例，归纳他们常用的内容形式、爆款话术、转化策略，并给出2-3个真实案例简述。
+
+  【4. nano banana生图提示与图片描述】
+  请为本工具生成4-6条nano banana AI绘图提示词（prompt），每条描述一张推广用图片，要求覆盖：工具实际效果、功能界面、适用场景、变现路径、用户反馈等。每条都要有详细描述，适合直接用于AI绘图。
+
+  【笔记类型】${GEN_TYPE_PROMPTS[genType]}
+  【重点赛道】${TRACK_DETAILS[genTrack]}
+  ${genExtra ? '【额外要求】' + genExtra : ''}
+  ${withSearch ? '请先联网搜索当前小红书的最新热点和爆款趋势，将热点元素融入笔记中。' : ''}
+
+  请用小红书博主的语气写，亲切自然、有感染力，不要太生硬的广告感。输出时严格分段，且每部分都要有内容。`;
+
+    let result = await callGemini(prompt, withSearch || genType === 'trend');
+    // 自动分段修正
+    result = fixGenSections(result);
+    // nano banana生图提示优化：高亮显示
+    result = result.replace(/(nano banana[\s\S]*?图片描述[\s\S]*?)(?=\n【|$)/gi, function(m) {
+      return m.replace(/(AI绘图提示词|prompt|图片描述)/gi, '<span style="color:#ff9800;font-weight:bold">$1</span>');
+    });
+    document.getElementById('genResultBody').innerHTML = result.replace(/\n/g,'<br>');
+    document.getElementById('genResult').classList.add('show');
+    lastGeneratedContent = result;
+  } catch (e) {
+    showToast('❌ ' + e.message);
+  } finally {
+    btn.disabled = btn2.disabled = false;
+    setLoading('genLoading', false);
+  }
+}
+
+async function geminiGenerateWithSearch() {
+  return geminiGenerate(true);
+}
+
+let lastGeneratedContent = '';
+let lastOptimizedContent = '';
+
+// 自动分段修正函数，确保输出4大部分
+function fixGenSections(text) {
+  if (!text) return '';
+  // 标题正则
+  const sections = [
+    '【1. Gemini大模型的分析与经验】',
+    '【2. Gemini基于本工具特点的总结】',
+    '【3. 大模型联网分析他人推广方式】',
+    '【4. nano banana生图提示与图片描述】'
+  ];
+  // 检查是否都存在
+  let fixed = text;
+  let missing = false;
+  for (let i = 0; i < sections.length; ++i) {
+    if (!fixed.includes(sections[i])) {
+      // 尝试用分段关键词修正
+      const alt = sections[i].replace(/【\d+\. /, '').replace('】', '');
+      const re = new RegExp('^\\s*' + alt.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'm');
+      if (re.test(fixed)) {
+        fixed = fixed.replace(re, '\n' + sections[i] + '\n');
+      } else {
+        // 缺失则补空段
+        missing = true;
+        fixed += `\n\n${sections[i]}\n（本段内容AI未输出，请手动补充）`;
+      }
+    }
+  }
+  // 强制分段顺序
+  let parts = [];
+  for (let i = 0; i < sections.length; ++i) {
+    const start = fixed.indexOf(sections[i]);
+    if (start === -1) { parts.push(sections[i] + '\n（本段内容AI未输出，请手动补充）'); continue; }
+    const end = i < sections.length - 1 ? fixed.indexOf(sections[i + 1]) : fixed.length;
+    parts.push(fixed.substring(start, end).trim());
+  }
+  return parts.join('\n\n');
+}
+
+// ===== 3. 优化当前笔记 =====
+async function geminiOptimize() {
+  const p = POSTS[currentDay - 1];
+  const direction = document.getElementById('optDirection').value;
+
+  const dirPrompts = {
+    viral: '让这条笔记更容易成为爆款。优化标题（加入爆款公式）、优化开头（前3行必须抓住注意力）、优化排版（更适合小红书阅读习惯）',
+    convert: '增强这条笔记的转化力。优化私信引导话术、增加行动召唤、强调产品价值和紧迫感、加入价格锚定',
+    engage: '提高这条笔记的互动率。增加互动引导（评论区扣1/投票/提问）、加入争议性观点引发讨论、优化结尾引导',
+    seo: '优化这条笔记的搜索排名。分析当前小红书热搜词，将相关关键词自然融入标题和正文，优化标签组合',
+    trend: '将这条笔记与小红书当前最新热点结合。搜索今天小红书的热门话题，改写笔记开头和标题来蹭热点'
+  };
+
+  const btn = document.getElementById('optBtn');
+  btn.disabled = true;
+  setLoading('optLoading', true);
+  document.getElementById('optResult').classList.remove('show');
+
+  try {
+    const prompt = `${TOOL_CONTEXT}
+
+我有一条已经写好的小红书推广笔记（Day ${currentDay}），请你帮我优化。
+
+【当前标题】
+${p.title}
+
+【当前正文】
+${p.content}
+
+【当前标签】
+${p.tags.map(t => '#' + t).join(' ')}
+
+【优化方向】
+${dirPrompts[direction]}
+
+${direction === 'trend' || direction === 'seo' ? '请联网搜索当前小红书最新热点和热搜词来优化。' : ''}
+
+请输出优化后的完整内容：
+
+【优化后标题】
+
+【优化后正文】
+（保持小红书风格，800-1200字）
+
+【优化后标签】
+（5-8个标签）
+
+【优化理由】
+（简要说明做了哪些改动以及为什么，3-5条）`;
+
+    const result = await callGemini(prompt, direction === 'trend' || direction === 'seo');
+    document.getElementById('optResultBody').textContent = result;
+    document.getElementById('optResult').classList.add('show');
+    lastOptimizedContent = result;
+  } catch (e) {
+    showToast('❌ ' + e.message);
+  } finally {
+    btn.disabled = false;
+    setLoading('optLoading', false);
+  }
+}
+
+// ===== 4. 推广策略 =====
+async function geminiStrategy() {
+  const stratType = document.getElementById('stratType').value;
+  const stratExtra = document.getElementById('stratExtra').value.trim();
+
+  const stratPrompts = {
+    growth: '请联网搜索2025-2026年小红书最新的涨粉增长技巧，分析最新的流量获取方法。重点关注：工具类账号如何快速获取精准粉丝、如何提高笔记曝光量、有哪些新的流量技巧',
+    content: '请联网搜索当前小红书上最容易火的内容类型和格式。分析：什么样的标题格式点击率最高、什么样的图文比例互动最好、哪些内容形式（图文/视频/轮播）效果最佳',
+    monetize: '请联网搜索2025-2026年小红书最新的变现方式和趋势。分析：工具类产品在小红书上的变现案例、最新的带货/种草/付费方式、如何设计变现路径',
+    compete: '请联网搜索当前小红书上类似的AI运营工具推广情况。分析：竞品在用什么推广策略、他们的内容有什么特点、有哪些值得借鉴的做法、如何做差异化',
+    platform: '请联网搜索2025-2026年小红书最新的平台政策和算法变化。分析：最新的流量分配规则、内容审核变化、商业化政策调整、对工具推广有什么影响',
+    channel: '请联网搜索全渠道推广方案。分析：除了小红书站内，还可以在哪些平台推广这个工具、如何做跨平台联动、每个平台的具体操作策略'
+  };
+
+  const btn = document.getElementById('stratBtn');
+  btn.disabled = true;
+  setLoading('stratLoading', true);
+  document.getElementById('stratResult').classList.remove('show');
+
+  try {
+    const prompt = `${TOOL_CONTEXT}
+
+我正在推广这个小红书AI运营工具，需要你提供专业的推广策略建议。
+
+${stratPrompts[stratType]}
+
+${stratExtra ? '【我的补充信息】' + stratExtra : ''}
+
+请提供：
+1. 【现状分析】当前市场和平台环境分析（基于联网搜索结果）
+2. 【核心策略】3-5条核心可执行策略（每条都要具体到操作步骤）
+3. 【执行计划】按时间线排列的具体执行步骤
+4. 【避坑指南】需要注意的风险和常见错误
+5. 【参考案例】引用真实的成功案例（基于搜索结果）
+6. 【预期效果】每个策略的预期效果和关键指标
+
+请用专业但易懂的语言，多用数据和案例支撑观点。`;
+
+    const result = await callGemini(prompt, true);
+    document.getElementById('stratResultBody').textContent = result;
+    document.getElementById('stratResult').classList.add('show');
+  } catch (e) {
+    showToast('❌ ' + e.message);
+  } finally {
+    btn.disabled = false;
+    setLoading('stratLoading', false);
+  }
+}
+
+// ===== 5. 常见问题 FAQ =====
+const FAQ_DATA = [
+  { cat: '🛠️ 工具功能', q: '这个AI运营工具具体能做什么？', a: '我们的工具覆盖小红书运营全流程：✅ 6大赛道一键切换（情感/美食/旅行/健身/穿搭/科技），每个赛道都有专属的内容模板、爆款公式、标签库\n✅ AI智能生成爆款笔记（标题+正文+标签+封面文案）\n✅ Gemini大模型联网分析实时热点趋势\n✅ nano banana AI生图，一键生成推广配图\n✅ 30天发布日历，每天都有现成的推广内容\n✅ 账号包装一键生成（头像/背景/简介/SOP）' },
+  { cat: '🛠️ 工具功能', q: '支持哪些赛道？可以自定义吗？', a: '目前内置6大热门赛道：\n🌸 情感赛道 — 治愈系内容，面向女性用户\n🍜 美食赛道 — 探店/食谱/测评\n✈️ 旅行赛道 — 攻略/打卡/Vlog\n💪 健身赛道 — 减脂/塑形/教程\n👗 穿搭赛道 — OOTD/好物分享\n📱 科技数码赛道 — 测评/教程/种草\n\n每个赛道都可以通过AI自定义补充关键词和个性化需求，灵活适配你的账号定位。' },
+  { cat: '🛠️ 工具功能', q: 'AI生成的内容质量怎么样？会不会很假？', a: '我们使用Google最新的Gemini 2.5 Flash大模型，具备联网搜索能力，生成的内容：\n✅ 基于实时热点数据，不是空话套话\n✅ 小红书原生语感，emoji+分段+互动引导一应俱全\n✅ 自动匹配爆款公式（痛点→解决方案→行动号召）\n✅ 可一键优化（爆款化/转化力/互动率/SEO/蹭热点5个维度）\n\n很多用户反馈"比自己写的还像真人发的"，建议先用AI生成底稿，再根据自己风格微调即可。' },
+  { cat: '🛠️ 工具功能', q: 'nano banana生图是什么？图片效果好吗？', a: 'nano banana 是 Google 最新的AI图像生成模型（基于 Gemini 3.1），特点：\n✅ 速度快 — 几秒内生成高质量图片\n✅ 风格多 — 支持插画/写实/扁平/3D等多种风格\n✅ 中文理解好 — 直接用中文描述就能生成\n✅ 免费额度充足 — API免费调用\n\n工具内置了自动生成推广配图提示词的功能，你只需点击"AI生图"按钮即可。图片可直接下载或复制用于小红书笔记。' },
+  { cat: '💰 价格与购买', q: '工具怎么收费？有免费试用吗？', a: '目前提供以下方案：\n🆓 免费体验 — 可查看30天完整发布内容日历、复制所有笔记文案\n💎 完整版 — 解锁全部AI功能（AI生成笔记、联网热点搜索、智能优化、推广策略、账号包装、AI生图）\n\n限时优惠中，具体价格请私信咨询。购买后永久使用，后续更新免费。' },
+  { cat: '💰 价格与购买', q: '需要自己准备API Key吗？', a: '是的，AI功能需要一个Google Gemini API Key（免费的！）\n\n获取步骤超简单：\n1️⃣ 打开 aistudio.google.com\n2️⃣ 登录Google账号\n3️⃣ 点击"Get API Key" → "Create API Key"\n4️⃣ 复制Key粘贴到工具中即可\n\n⚠️ Google免费额度非常大，日常使用完全够用，不需要花钱。' },
+  { cat: '💰 价格与购买', q: '付款后多久能拿到工具？', a: '付款确认后 **立即发送**！\n📦 你会收到：完整HTML文件 + API Key配置教程 + 使用指南\n💬 同时拉你进售后群，有问题随时问\n\n整个过程不超过5分钟，马上就能开始用。' },
+  { cat: '📊 效果与转化', q: '用这个工具真的能涨粉吗？多久见效？', a: '根据已有用户数据：\n📈 第1周：每天发布优质内容，开始积累曝光\n📈 第2周：部分笔记开始有自然流量，粉丝开始增长\n📈 第3-4周：爆款笔记出现概率大增，日均涨粉50-200+\n\n关键在于坚持执行！工具已经帮你解决了最难的"不知道发什么"和"内容质量不够"的问题。按照30天日历执行，配合AI优化，大概率2-4周见效。\n\n⚠️ 注意：效果因赛道、执行力、账号基础而异，我们不做虚假承诺，但工具确实能大幅提升效率。' },
+  { cat: '📊 效果与转化', q: '适合新手小白吗？完全不懂运营能用吗？', a: '非常适合新手！这个工具就是为"不懂运营但想做小红书"的人设计的：\n\n✅ 30天日历告诉你每天发什么 — 不用纠结内容\n✅ 一键复制文案 — 不用自己写\n✅ AI优化一键升级 — 不用研究爆款公式\n✅ 账号包装一键生成 — 不用找设计\n✅ 推广策略AI规划 — 不用自己摸索\n\n概括就是：你只需要动动手指复制粘贴，工具帮你搞定剩下的一切。很多零基础用户反馈"终于不迷茫了"。' },
+  { cat: '📊 效果与转化', q: '只能做推广吗？能做个人IP吗？', a: '完全可以！工具的核心是帮你高效产出优质小红书内容，不限于推广。你可以用来：\n\n🎯 个人IP打造 — 用账号包装+日历规划持续输出\n🎯 知识博主 — AI帮你生成专业内容\n🎯 带货种草 — 生成产品测评/推荐笔记\n🎯 品牌推广 — 批量生成品牌相关内容\n🎯 副业变现 — 代运营/卖教程/接推广\n\n6个赛道模板覆盖了最热门的方向，切换即用。' },
+  { cat: '🔧 使用问题', q: '打开网页提示"API Key未配置"怎么办？', a: '两种解决方法：\n\n方法一（推荐）：在工具同目录下创建 gemini_key.txt 文件，写入：\nGEMINI_API_KEY=你的Key\n\n方法二：直接在网页顶部的输入框粘贴API Key，点保存\n\n⚠️ 如果用Chrome直接打开html文件（file://协议），可能无法读取本地文件，请用方法二或启动本地服务器。' },
+  { cat: '🔧 使用问题', q: 'AI功能报错/没反应怎么办？', a: '常见原因和解决：\n\n1️⃣ API Key无效 → 去 aistudio.google.com 重新生成\n2️⃣ 网络问题 → 确保能访问Google服务（可能需要科学上网）\n3️⃣ 额度用完 → 免费额度一般很充足，等几分钟重试\n4️⃣ 浏览器兼容 → 推荐Chrome/Edge最新版\n\n如果还是不行，截图发群里，技术同学帮你排查。' },
+  { cat: '🔧 使用问题', q: '可以在手机上用吗？', a: '可以！网页完全适配手机浏览器：\n📱 Chrome/Safari/Edge 手机版都能正常使用\n📱 所有功能（查看日历、复制文案、AI生成等）均可在手机操作\n\n建议：日常用手机查看和复制内容，需要AI生成/优化时用电脑体验更佳。' },
+  { cat: '🔧 使用问题', q: '内容可以修改吗？30天用完了怎么办？', a: '当然可以修改！\n✅ 直接修改HTML文件中的POSTS数组即可自定义内容\n✅ 用AI生成的内容可一键替换当天原始内容\n✅ 30天用完后可以从Day 1重新开始（内容本身就是常青内容）\n✅ 也可以用AI持续生成新的笔记内容\n\n工具是一次购买永久使用的，不存在"用完"的问题。' },
+  { cat: '🤝 售后服务', q: '有售后群吗？遇到问题找谁？', a: '有的！购买后会拉你进专属售后群：\n💬 技术问题随时在群里问\n📚 不定期分享小红书运营干货\n🔄 工具有更新会第一时间通知\n👥 还能和其他用户交流运营心得\n\n我们承诺：7天内任何问题包退，售后永久有效。' },
+  { cat: '🤝 售后服务', q: '工具会持续更新吗？', a: '会的！我们会持续更新：\n🔄 赛道内容定期刷新（跟紧最新热点）\n🆕 新功能持续开发中（视频脚本生成、评论自动回复等）\n📊 AI模型同步升级（跟进Google最新模型）\n💡 根据用户反馈优化体验\n\n已购买用户所有更新免费！' },
+];
+
+// 额外的AI生成FAQ会追加到这里
+let extraFAQ = [];
+
+function renderFAQ() {
+  const container = document.getElementById('faqList');
+  const all = [...FAQ_DATA, ...extraFAQ];
+  let currentCat = '';
+  let html = '';
+  all.forEach((item, i) => {
+    if (item.cat !== currentCat) {
+      currentCat = item.cat;
+      html += `<div class="faq-category">${currentCat}</div>`;
+    }
+    html += `<div class="faq-item" data-idx="${i}" onclick="toggleFAQ(this)">
+      <div class="faq-q">${item.q}<span class="faq-arrow">▼</span></div>
+      <div class="faq-a">${item.a.replace(/\n/g, '<br>')}</div>
+    </div>`;
+  });
+  container.innerHTML = html;
+}
+
+function toggleFAQ(el) {
+  el.classList.toggle('open');
+}
+
+function filterFAQ() {
+  const kw = document.getElementById('faqSearchInput').value.trim().toLowerCase();
+  const items = document.querySelectorAll('#faqList .faq-item');
+  const cats = document.querySelectorAll('#faqList .faq-category');
+  if (!kw) {
+    items.forEach(el => el.style.display = '');
+    cats.forEach(el => el.style.display = '');
+    return;
+  }
+  const all = [...FAQ_DATA, ...extraFAQ];
+  const visibleCats = new Set();
+  items.forEach((el, i) => {
+    const idx = parseInt(el.dataset.idx);
+    const item = all[idx];
+    const match = item && (item.q.toLowerCase().includes(kw) || item.a.toLowerCase().includes(kw));
+    el.style.display = match ? '' : 'none';
+    if (match && item) visibleCats.add(item.cat);
+  });
+  cats.forEach(el => {
+    el.style.display = visibleCats.has(el.textContent) ? '' : 'none';
+  });
+}
+
+async function aiGenFAQ() {
+  const btn = document.getElementById('faqGenBtn');
+  btn.disabled = true;
+  setLoading('faqLoading', true);
+  try {
+    const prompt = `${TOOL_CONTEXT}
+
+你是小红书AI运营工具的客服专家。请联网搜索当前小红书用户最关心的运营问题，结合本工具特点，生成8-10个新的客户常见问答。
+
+要求：
+1. 每个问答用以下格式：
+Q: 问题
+A: 回答
+
+2. 涵盖以下方面（每方面至少1-2个）：
+- 工具使用技巧和进阶用法
+- 小红书最新政策对工具使用的影响
+- 不同赛道的具体运营建议
+- 变现和收益相关
+- 和市面上其他工具的对比优势
+
+3. 回答要专业、详细、有说服力，多用emoji和换行，适合直接发给客户。
+4. 回答中要适当体现本工具的优势和卖点。`;
+
+    const result = await callGemini(prompt, true);
+    // 解析Q&A
+    const pairs = result.split(/\nQ[:：]\s*/i).filter(Boolean);
+    const newFAQs = [];
+    pairs.forEach(block => {
+      const parts = block.split(/\nA[:：]\s*/i);
+      if (parts.length >= 2) {
+        const q = parts[0].trim().replace(/^Q[:：]?\s*/i, '');
+        const a = parts.slice(1).join('\n').trim();
+        if (q && a) newFAQs.push({ cat: '🤖 AI生成', q, a });
+      }
+    });
+    if (newFAQs.length > 0) {
+      extraFAQ.push(...newFAQs);
+      renderFAQ();
+      showToast(`✅ 已生成 ${newFAQs.length} 个新问答`);
+    } else {
+      showToast('⚠️ 未能解析出有效问答，请重试');
+    }
+  } catch (e) {
+    showToast('❌ ' + e.message);
+  } finally {
+    btn.disabled = false;
+    setLoading('faqLoading', false);
+  }
+}
+
+function copyAllFAQ() {
+  const all = [...FAQ_DATA, ...extraFAQ];
+  let text = '📋 小红书AI运营工具 — 常见问题解答\n\n';
+  let currentCat = '';
+  all.forEach(item => {
+    if (item.cat !== currentCat) {
+      currentCat = item.cat;
+      text += `\n━━━ ${currentCat} ━━━\n\n`;
+    }
+    text += `❓ ${item.q}\n💬 ${item.a}\n\n`;
+  });
+  navigator.clipboard.writeText(text).then(() => showToast('✅ 已复制全部Q&A')).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('✅ 已复制全部Q&A');
+  });
+}
+
+// ===== 应用生成内容到今天 =====
+
+// 存储 AI 覆写的内容
+const aiOverrides = {};
+
+function applyToToday() {
+  if (!lastGeneratedContent) { showToast('没有可应用的内容'); return; }
+  applyContent(lastGeneratedContent);
+}
+
+function applyOptimized() {
+  if (!lastOptimizedContent) { showToast('没有可应用的内容'); return; }
+  applyContent(lastOptimizedContent);
+}
+
+function applyContent(raw) {
+  // 尝试解析结构化内容
+  const titleMatch = raw.match(/【(?:优化后)?(?:笔记)?标题】\s*\n([^\n]+)/);
+  const contentMatch = raw.match(/【(?:优化后)?(?:笔记)?正文】\s*\n([\s\S]*?)(?=\n【|$)/);
+  const tagsMatch = raw.match(/【(?:优化后)?标签】\s*\n([^\n]+)/);
+  const coverMatch = raw.match(/【封面图文案】\s*\n([^\n]+)/);
+
+  const override = {
+    title: titleMatch ? titleMatch[1].trim() : null,
+    content: contentMatch ? contentMatch[1].trim() : null,
+    tags: tagsMatch ? tagsMatch[1].trim().split(/\s+/).map(t => t.replace(/^#/, '')) : null,
+    cover: coverMatch ? coverMatch[1].trim() : null,
+  };
+
+  aiOverrides[currentDay] = override;
+  renderPost(currentDay);
+  showToast('✅ AI 内容已应用到 Day ' + currentDay);
+}
+
+function clearOverride(day) {
+  delete aiOverrides[day];
+  renderPost(day);
+  showToast('已恢复原始内容');
+}
+
+function copyAIResult(containerId) {
+  const text = document.querySelector('#' + containerId + ' .ai-result-body')?.textContent || '';
+  navigator.clipboard.writeText(text).then(() => showToast('✅ 已复制')).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('✅ 已复制');
+  });
+}
+
+// ===== 修改 renderPost 以支持 AI 覆写 =====
+const _origRenderPost = renderPost;
+renderPost = function(d) {
+  _origRenderPost(d);
+
+  // 如果有 AI 覆写，替换内容
+  const ov = aiOverrides[d];
+  if (ov) {
+    if (ov.cover) {
+      const coverEl = document.getElementById('postBody')?.querySelector('.cover-text');
+      if (coverEl) coverEl.innerHTML = ov.cover + ' <span class="ai-override-badge">🤖 AI生成</span>';
+    }
+    if (ov.title) {
+      const titleEl = document.getElementById('postBody')?.querySelector('.post-title-text');
+      if (titleEl) titleEl.innerHTML = ov.title + ' <span class="ai-override-badge">🤖 AI生成</span>';
+    }
+    if (ov.content) {
+      const contentEl = document.getElementById('postBody')?.querySelector('.post-content');
+      if (contentEl) contentEl.textContent = ov.content;
+    }
+    if (ov.tags) {
+      const tagsEl = document.getElementById('postBody')?.querySelector('.tags-area');
+      if (tagsEl) tagsEl.innerHTML = ov.tags.map(t => `<span class="tag">#${t}</span>`).join('');
+    }
+
+    // 添加恢复按钮
+    const copyBar = document.getElementById('copyBar');
+    if (copyBar) {
+      copyBar.innerHTML += `<button class="copy-btn" onclick="clearOverride(${d})" style="color:var(--orange);border-color:var(--orange)">↩️ 恢复原始内容</button>`;
+    }
+  }
+
+  // 更新优化标签的当前天数
+  const optDayEl = document.getElementById('optDayNum');
+  if (optDayEl) optDayEl.textContent = d;
+};
+
+// 重新渲染当前
+renderPost(currentDay);
+
+// 初始化 API Key 状态
+setTimeout(updateKeyStatus, 100);
+</script>
+</body>
+</html>
