@@ -267,6 +267,33 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hira
 .profile-card .pc-keywords{display:flex;flex-wrap:wrap;gap:6px}
 .profile-card .pc-kw{background:#e8f5e9;color:#2e7d32;padding:4px 10px;border-radius:12px;font-size:12px}
 .profile-card .pc-sop{background:#fafafa;border-radius:10px;padding:12px 14px;font-size:13px;line-height:2;white-space:pre-wrap}
+/* 小红书主页预览卡片 */
+.xhs-profile-preview{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.1);max-width:420px;margin:0 auto 20px}
+.xhs-profile-preview .xhs-pp-bg{width:100%;height:160px;object-fit:cover;display:block;background:linear-gradient(135deg,#ff6b9d,#c44eff,#6e8efb);position:relative}
+.xhs-profile-preview .xhs-pp-bg img{width:100%;height:100%;object-fit:cover}
+.xhs-profile-preview .xhs-pp-bg .xhs-pp-bg-loading{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;gap:8px}
+.xhs-profile-preview .xhs-pp-avatar-wrap{display:flex;justify-content:center;margin-top:-44px;position:relative;z-index:2}
+.xhs-profile-preview .xhs-pp-avatar{width:88px;height:88px;border-radius:50%;border:4px solid #fff;box-shadow:0 2px 12px rgba(0,0,0,.12);object-fit:cover;background:#f0f0f0;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.xhs-profile-preview .xhs-pp-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.xhs-profile-preview .xhs-pp-avatar .xhs-pp-av-loading{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:12px;color:#999}
+.xhs-profile-preview .xhs-pp-info{text-align:center;padding:8px 20px 16px}
+.xhs-profile-preview .xhs-pp-name{font-size:18px;font-weight:800;color:#333;margin:6px 0 2px}
+.xhs-profile-preview .xhs-pp-id{font-size:12px;color:#999;margin-bottom:8px}
+.xhs-profile-preview .xhs-pp-bio{font-size:13px;color:#555;line-height:1.7;text-align:left;padding:0 4px;margin-bottom:10px}
+.xhs-profile-preview .xhs-pp-tags{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:12px}
+.xhs-profile-preview .xhs-pp-tag{background:#fff0f3;color:#ff4778;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600}
+.xhs-profile-preview .xhs-pp-stats{display:flex;justify-content:space-around;border-top:1px solid #f0f0f0;padding:12px 0}
+.xhs-profile-preview .xhs-pp-stat{text-align:center}
+.xhs-profile-preview .xhs-pp-stat-num{font-size:16px;font-weight:800;color:#333}
+.xhs-profile-preview .xhs-pp-stat-label{font-size:11px;color:#999;margin-top:2px}
+.xhs-pp-copy-bar{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:8px 0}
+.xhs-pp-copy-bar button{font-size:12px;padding:5px 12px;border-radius:8px;border:1px solid #e0e0e0;background:#fff;cursor:pointer;color:#555}
+.xhs-pp-copy-bar button:hover{background:#f5f5f5;border-color:#aaa}
+.xhs-pp-alt-names{margin-top:12px}
+.xhs-pp-alt-names .xhs-pp-alt-label{font-size:12px;color:#999;margin-bottom:6px}
+.xhs-pp-alt-names .xhs-pp-alt-list{display:flex;flex-wrap:wrap;gap:6px}
+.xhs-pp-alt-names .xhs-pp-alt-item{background:#f5f0ff;color:#6b4fa0;padding:4px 12px;border-radius:14px;font-size:13px;cursor:pointer;transition:all .2s}
+.xhs-pp-alt-names .xhs-pp-alt-item:hover{background:#e8dfff;transform:scale(1.05)}
 </style>
 </head>
 <body>
@@ -715,44 +742,37 @@ async function genProfile() {
   try {
     const prompt = `${TOOL_CONTEXT}
 
-你是小红书顶级账号策划专家。我要在小红书上创建一个专门推广「小红书情感账号·运营管理平台」这款AI工具的账号。请为这个推广账号生成完整的包装方案。
+你是小红书顶级账号策划专家。我要在小红书上创建一个专门推广「小红书情感账号·运营管理平台」这款AI工具的账号。
 
-注意：这个账号的目的是推广和销售这款9.9元体验价的AI运营工具，不是做情感/美食等内容账号。账号要给人专业、可信赖、有干货的感觉。
+请直接给我一套可以立即使用的账号包装方案，不要给多个选项让我选，直接给最佳方案。
+
+注意：这个账号的目的是推广和销售这款9.9元体验价的AI运营工具。参考小红书上真实的工具推广账号风格：专业+亲切+有价值感。
 
 请严格按以下JSON格式输出，只输出JSON：
 {
-  "names": [
-    {"name": "账号名1（含emoji，易记，体现AI工具/运营/效率）", "reason": "命名思路"},
-    {"name": "账号名2", "reason": "命名思路"},
-    {"name": "账号名3", "reason": "命名思路"},
-    {"name": "账号名4", "reason": "命名思路"}
-  ],
-  "avatarPrompts": [
-    "头像图片英文prompt1（适合小红书头像，专业感+亲和力，与工具推广定位相符，不要真人）",
-    "头像图片英文prompt2",
-    "头像图片英文prompt3"
-  ],
-  "bgPrompts": [
-    "背景图英文prompt1（小红书主页背景图尺寸，突出AI工具/效率/副业等主题）",
-    "背景图英文prompt2"
-  ],
-  "bios": [
-    "账号简介1（80字内，突出工具推广者身份+能给粉丝带来的价值）",
-    "账号简介2"
-  ],
-  "slogan": "账号定位文案（20字内，如：用AI帮你玩转小红书）",
-  "keywords": ["关键词1", "关键词2", "关键词3", "关键词4", "关键词5"],
-  "sop": "每日发布运营SOP（包含：内容方向选择→用AI工具生成笔记→封面图制作→最佳发布时间→发布后互动→评论区引流→私信转化话术→数据复盘，详细步骤）"
+  "name": "账号名称（含1个emoji，5-10字，易记且专业，参考小红书上真实的工具/副业/运营类账号命名风格，例如：小林AI运营记、AI副业小助手等）",
+  "altNames": ["备选名1", "备选名2", "备选名3"],
+  "bio": "账号简介（70字内，小红书风格，用emoji分隔，包含：身份定位+能提供的价值+引导私信的CTA。参考真实小红书简介风格，例如：💻 全职自媒体运营 | ✨ 分享AI运营干货 | 📌 工具体验→私信「工具」）",
+  "avatarPrompt": "English prompt for avatar image: A cute, modern, professional avatar icon suitable for Xiaohongshu profile. The icon should represent an AI/tech content creator. Style: clean vector illustration, rounded, friendly, with warm colors (coral pink, soft purple, mint green). Include subtle tech elements like a small sparkle, cursor, or AI chip motif. Square 1:1 ratio, simple background. NOT a real person photo.",
+  "bgPrompt": "English prompt for background banner: A wide banner image (16:9 ratio) for Xiaohongshu profile background. Show a clean, modern workspace scene with a laptop displaying a content dashboard, surrounded by floating UI cards, charts, and AI-generated content previews. Color palette: soft gradient (pink to lavender), warm lighting, professional but inviting. Include subtle text overlay area for the profile info below. Style: flat design illustration, modern SaaS product aesthetic.",
+  "tags": ["标签1", "标签2", "标签3", "标签4", "标签5"],
+  "positioning": "一句话定位（15字内，如：AI帮你玩转小红书运营）"
 }
 
-${persona ? '【推广者人设】' + persona : '【推广者人设】副业达人/工具测评博主'}
+要求：
+1. 名称要像真实小红书用户的名字，不要太长太复杂
+2. 简介要像真实博主写的，用竖线 |、emoji、箭头→分隔，简洁有力
+3. 头像和背景图的prompt要具体、高质量，能生成好看的图片
+4. 绝对禁止在简介中放任何URL链接
+
+${persona ? '【推广者人设】' + persona : '【推广者人设】副业达人/AI工具测评博主'}
 ${style ? '【账号风格】' + style : '【账号风格】专业干货+亲切分享'}
 【重点推广赛道】${TRACK_DETAILS[track]}`;
 
     const result = await callGemini(prompt, true);
     const data = parseNoteJSON(result);
 
-    if (data && data.names) {
+    if (data && data.name) {
       _profileData = data;
       await renderProfileCard(data);
     } else {
@@ -770,57 +790,66 @@ ${style ? '【账号风格】' + style : '【账号风格】专业干货+亲切�
 
 async function renderProfileCard(data) {
   const body = document.getElementById('profileResultBody');
-  // Names
-  const namesHtml = data.names.map(n => `<span class="pc-name" title="${n.reason || ''}">${n.name}</span>`).join('');
-  // Bios
-  const biosHtml = (data.bios || []).map(b => `<div class="pc-bio">${b}</div>`).join('');
-  // Keywords
-  const kwHtml = (data.keywords || []).map(k => `<span class="pc-kw">${k}</span>`).join('');
+  const xhsId = 'XHS_' + Math.random().toString(36).substr(2, 8).toUpperCase();
+  const tagsHtml = (data.tags || []).map(t => `<span class="xhs-pp-tag">${t}</span>`).join('');
+  const altNamesHtml = (data.altNames || []).map(n => `<span class="xhs-pp-alt-item" onclick="document.getElementById('ppName').textContent='${n.replace(/'/g, "\\'")}'">${n}</span>`).join('');
 
-  body.innerHTML = `<div class="profile-card">
-    <div class="pc-section">
-      <div class="pc-label">📛 推荐账号名</div>
-      <div class="pc-names">${namesHtml}</div>
-    </div>
-    <div class="pc-section">
-      <div class="pc-label">🖼️ AI生成头像</div>
-      <div class="pc-imgs-grid" id="profileAvatars"><div style="text-align:center;padding:16px;color:var(--text3)"><span class="mini-spinner" style="display:inline-block"></span><br>正在生成头像...</div></div>
-    </div>
-    <div class="pc-section">
-      <div class="pc-label">🎨 AI生成背景图</div>
-      <div class="pc-imgs-grid" id="profileBgs"><div style="text-align:center;padding:16px;color:var(--text3)"><span class="mini-spinner" style="display:inline-block"></span><br>正在生成背景图...</div></div>
-    </div>
-    <div class="pc-section">
-      <div class="pc-label">📝 账号简介</div>
-      ${biosHtml}
-      ${data.slogan ? `<div style="margin-top:8px;font-size:15px;font-weight:700;color:var(--primary)">💬 ${data.slogan}</div>` : ''}
-    </div>
-    <div class="pc-section">
-      <div class="pc-label">🏷️ 账号关键词</div>
-      <div class="pc-keywords">${kwHtml}</div>
-    </div>
-    <div class="pc-section">
-      <div class="pc-label">📋 每日运营SOP</div>
-      <div class="pc-sop">${(data.sop || '').replace(/</g,'&lt;').replace(/\n/g,'<br>')}</div>
-    </div>
-  </div>`;
+  body.innerHTML = `
+    <div style="text-align:center;margin-bottom:8px;font-size:13px;color:var(--text3)">⬇️ 以下是你的小红书账号预览，可直接使用</div>
 
-  // Generate avatars
-  if (data.avatarPrompts && data.avatarPrompts.length) {
-    let avHtml = '';
-    for (const p of data.avatarPrompts) {
-      avHtml += `<div>${await tryGenImage(p)}</div>`;
+    <div class="xhs-profile-preview">
+      <div class="xhs-pp-bg" id="ppBgWrap">
+        <div class="xhs-pp-bg-loading"><span class="mini-spinner" style="display:inline-block;width:20px;height:20px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite"></span> 正在生成背景图...</div>
+      </div>
+      <div class="xhs-pp-avatar-wrap">
+        <div class="xhs-pp-avatar" id="ppAvatarWrap">
+          <div class="xhs-pp-av-loading"><span class="mini-spinner" style="display:inline-block;width:18px;height:18px;border:2px solid #eee;border-top-color:#ff4778;border-radius:50%;animation:spin .8s linear infinite"></span></div>
+        </div>
+      </div>
+      <div class="xhs-pp-info">
+        <div class="xhs-pp-name" id="ppName">${data.name}</div>
+        <div class="xhs-pp-id">小红书号：${xhsId}</div>
+        ${data.positioning ? `<div style="font-size:12px;color:#ff4778;font-weight:600;margin-bottom:6px">✨ ${data.positioning}</div>` : ''}
+        <div class="xhs-pp-bio">${(data.bio || '').replace(/\|/g, '<br>').replace(/\n/g, '<br>')}</div>
+        <div class="xhs-pp-tags">${tagsHtml}</div>
+        <div class="xhs-pp-stats">
+          <div class="xhs-pp-stat"><div class="xhs-pp-stat-num">0</div><div class="xhs-pp-stat-label">关注</div></div>
+          <div class="xhs-pp-stat"><div class="xhs-pp-stat-num">0</div><div class="xhs-pp-stat-label">粉丝</div></div>
+          <div class="xhs-pp-stat"><div class="xhs-pp-stat-num">0</div><div class="xhs-pp-stat-label">获赞与收藏</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="xhs-pp-copy-bar">
+      <button onclick="navigator.clipboard.writeText(document.getElementById('ppName').textContent).then(()=>showToast('✅ 名称已复制'))">📋 复制名称</button>
+      <button onclick="navigator.clipboard.writeText('${(data.bio || '').replace(/'/g, "\\'").replace(/\n/g, '\\n')}').then(()=>showToast('✅ 简介已复制'))">📋 复制简介</button>
+      <button onclick="navigator.clipboard.writeText('${(data.tags || []).map(t=>'#'+t).join(' ').replace(/'/g, "\\\'")}').then(()=>showToast('✅ 标签已复制'))">📋 复制标签</button>
+    </div>
+
+    ${altNamesHtml ? `<div class="xhs-pp-alt-names">
+      <div class="xhs-pp-alt-label">🔄 点击切换其他名称方案：</div>
+      <div class="xhs-pp-alt-list">${altNamesHtml}</div>
+    </div>` : ''}
+
+    <div style="margin-top:16px;font-size:12px;color:var(--text3);text-align:center">💡 头像和背景图下方有下载按钮，可直接保存使用</div>
+  `;
+
+  // 同时生成头像和背景图
+  const genAvatar = async () => {
+    if (data.avatarPrompt) {
+      const html = await tryGenImage(data.avatarPrompt);
+      document.getElementById('ppAvatarWrap').innerHTML = html;
     }
-    document.getElementById('profileAvatars').innerHTML = avHtml;
-  }
-  // Generate backgrounds
-  if (data.bgPrompts && data.bgPrompts.length) {
-    let bgHtml = '';
-    for (const p of data.bgPrompts) {
-      bgHtml += `<div>${await tryGenImage(p)}</div>`;
+  };
+  const genBg = async () => {
+    if (data.bgPrompt) {
+      const html = await tryGenImage(data.bgPrompt);
+      document.getElementById('ppBgWrap').innerHTML = html;
     }
-    document.getElementById('profileBgs').innerHTML = bgHtml;
-  }
+  };
+  // 先生成头像，再生成背景图
+  await genAvatar();
+  await genBg();
 }
 // ========== 30天完整内容数据 ==========
 const POSTS = [
