@@ -244,6 +244,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hira
 .xhs-note-copy-bar{display:flex;gap:8px;flex-wrap:wrap;padding:16px 20px;border-top:1px solid #f0f0f0;background:#fafafa;border-radius:0 0 16px 16px}
 .xhs-note-copy-bar button{padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer;font-size:12px;color:var(--text2);transition:.2s;display:flex;align-items:center;gap:4px}
 .xhs-note-copy-bar button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-light)}
+
+/* ===== 每日笔记配图生成区 ===== */
+.day-img-area{margin-top:12px;border:2px dashed #e0e0e0;border-radius:12px;padding:16px;background:#fafafa}
+.day-img-area.has-imgs{border-style:solid;border-color:#a5d6a7;background:#f0faf0}
+.day-img-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-top:10px}
+.day-img-grid img{width:100%;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.day-img-gen-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.day-img-status{font-size:12px;color:var(--text3)}
+.day-img-gen-bar .mini-spinner{width:20px;height:20px;border:3px solid #fcc;border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite}
+
+/* ===== 账号包装结果卡片 ===== */
+.profile-card{background:#fff;border-radius:14px;border:1px solid #e8e8e8;overflow:hidden;margin-top:12px}
+.profile-card .pc-section{padding:16px 20px;border-bottom:1px solid #f0f0f0}
+.profile-card .pc-section:last-child{border-bottom:none}
+.profile-card .pc-label{font-size:13px;font-weight:700;color:#4285f4;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.profile-card .pc-names{display:flex;flex-wrap:wrap;gap:8px}
+.profile-card .pc-name{background:#e8f0fe;color:#1565c0;padding:6px 14px;border-radius:20px;font-size:14px;font-weight:600}
+.profile-card .pc-bio{background:#f8f9ff;border-radius:10px;padding:10px 14px;font-size:13px;line-height:1.8;margin-bottom:6px;border-left:3px solid #4285f4}
+.profile-card .pc-imgs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:8px}
+.profile-card .pc-imgs-grid img{width:100%;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.profile-card .pc-keywords{display:flex;flex-wrap:wrap;gap:6px}
+.profile-card .pc-kw{background:#e8f5e9;color:#2e7d32;padding:4px 10px;border-radius:12px;font-size:12px}
+.profile-card .pc-sop{background:#fafafa;border-radius:10px;padding:12px 14px;font-size:13px;line-height:2;white-space:pre-wrap}
 </style>
 </head>
 <body>
@@ -289,11 +312,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hira
 
       <!-- Tab 0: 账号包装 -->
       <div class="ai-section" id="tab-profile">
-        <h3 style="font-size:16px;margin-bottom:10px;color:#4285f4">🧑‍💼 账号包装一键生成</h3>
+        <h3 style="font-size:16px;margin-bottom:10px;color:#4285f4">🧑‍💼 推广账号包装一键生成</h3>
+        <p style="font-size:13px;color:var(--text3);margin-bottom:12px">为你的<strong>小红书推广账号</strong>生成完整包装方案：账号名、AI头像、AI背景图、简介文案、运营SOP</p>
         <div class="ai-form-group">
-          <label>账号定位/赛道</label>
+          <label>重点推广的赛道</label>
           <select class="ai-select" id="profileTrack">
-            <option value="emotion">🌸 情感账号</option>
+            <option value="all">🎯 综合推广（覆盖7大赛道）</option>
             <option value="food">🍜 美食账号</option>
             <option value="travel">✈️ 旅行账号</option>
             <option value="fitness">💪 健身账号</option>
@@ -303,12 +327,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hira
           </select>
         </div>
         <div class="ai-form-group">
-          <label>目标用户/人设（可选）</label>
-          <input class="ai-input" id="profilePersona" placeholder="如：宝妈/上班族/大学生/副业党..." />
+          <label>推广者人设（可选）</label>
+          <input class="ai-input" id="profilePersona" placeholder="如：副业达人/工具测评博主/宝妈副业党/运营老司机..." />
         </div>
         <div class="ai-form-group">
           <label>账号风格（可选）</label>
-          <input class="ai-input" id="profileStyle" placeholder="如：治愈系/极简/科技感/文艺/高冷..." />
+          <input class="ai-input" id="profileStyle" placeholder="如：专业干货/亲切分享/科技感/温暦的工具测评..." />
         </div>
         <div class="ai-btn-group">
           <button class="ai-btn ai-btn-primary" onclick="genProfile()" id="profileBtn">✨ 一键生成账号包装</button>
@@ -647,7 +671,39 @@ function downloadGenImg(idx, mime) {
   a.click();
   showToast('✅ 图片已下载');
 }
-// ===== 账号包装AI生成 =====
+// ===== 每日笔记配图AI生成 =====
+const _dayImgCache = {}; // 缓存已生成的配图
+
+async function genDayImages(day) {
+  const p = POSTS[day - 1];
+  if (!p || !p.images || !p.images.length) { showToast('当日没有配图描述'); return; }
+  if (!hasApiAccess()) { showToast('❌ 请先在AI面板配置Key或确认代理可用'); return; }
+
+  const btn = document.getElementById(`dayImgBtn_${day}`);
+  const status = document.getElementById(`dayImgStatus_${day}`);
+  const grid = document.getElementById(`dayImgGrid_${day}`);
+  const area = document.getElementById(`dayImgArea_${day}`);
+  if (btn) btn.disabled = true;
+  if (status) status.innerHTML = '<span class="mini-spinner" style="display:inline-block;vertical-align:middle"></span> 正在生成...';
+
+  const imgs = p.images;
+  let htmlItems = '';
+  for (let i = 0; i < imgs.length; i++) {
+    if (status) status.innerHTML = `<span class="mini-spinner" style="display:inline-block;vertical-align:middle"></span> 正在生成第 ${i+1}/${imgs.length} 张...`;
+    const result = await tryGenImage(imgs[i]);
+    htmlItems += `<div>${result}</div>`;
+  }
+
+  if (grid) grid.innerHTML = htmlItems;
+  if (area) area.classList.add('has-imgs');
+  if (status) status.textContent = `✅ 已生成 ${imgs.length} 张配图`;
+  if (btn) { btn.disabled = false; btn.textContent = '🔄 重新生成配图'; }
+  _dayImgCache[day] = htmlItems;
+}
+
+// ===== 账号包装AI生成（推广工具的小红书账号包装） =====
+let _profileData = null;
+
 async function genProfile() {
   const track = document.getElementById('profileTrack').value;
   const persona = document.getElementById('profilePersona').value.trim();
@@ -657,36 +713,113 @@ async function genProfile() {
   setLoading('profileLoading', true);
   document.getElementById('profileResult').classList.remove('show');
   try {
-    const prompt = `你是小红书顶级账号策划专家和Gemini大模型，请为以下账号一键生成完整包装方案，输出内容严格分为以下部分：
+    const prompt = `${TOOL_CONTEXT}
 
-【1. 账号名】
-请生成4个风格各异、易记、适合小红书的账号名（带emoji），并说明命名思路。
+你是小红书顶级账号策划专家。我要在小红书上创建一个专门推广「小红书情感账号·运营管理平台」这款AI工具的账号。请为这个推广账号生成完整的包装方案。
 
-【2. 头像nano banana生图提示】
-请为nano banana AI绘图生成3条头像提示词（prompt），要求风格与账号定位和人设一致，适合小红书头像，描述要详细。
+注意：这个账号的目的是推广和销售这款9.9元体验价的AI运营工具，不是做情感/美食等内容账号。账号要给人专业、可信赖、有干货的感觉。
 
-【3. 背景图nano banana生图提示】
-请为nano banana AI绘图生成2条背景图提示词，要求突出账号风格和赛道特征。
+请严格按以下JSON格式输出，只输出JSON：
+{
+  "names": [
+    {"name": "账号名1（含emoji，易记，体现AI工具/运营/效率）", "reason": "命名思路"},
+    {"name": "账号名2", "reason": "命名思路"},
+    {"name": "账号名3", "reason": "命名思路"},
+    {"name": "账号名4", "reason": "命名思路"}
+  ],
+  "avatarPrompts": [
+    "头像图片英文prompt1（适合小红书头像，专业感+亲和力，与工具推广定位相符，不要真人）",
+    "头像图片英文prompt2",
+    "头像图片英文prompt3"
+  ],
+  "bgPrompts": [
+    "背景图英文prompt1（小红书主页背景图尺寸，突出AI工具/效率/副业等主题）",
+    "背景图英文prompt2"
+  ],
+  "bios": [
+    "账号简介1（80字内，突出工具推广者身份+能给粉丝带来的价值）",
+    "账号简介2"
+  ],
+  "slogan": "账号定位文案（20字内，如：用AI帮你玩转小红书）",
+  "keywords": ["关键词1", "关键词2", "关键词3", "关键词4", "关键词5"],
+  "sop": "每日发布运营SOP（包含：内容方向选择→用AI工具生成笔记→封面图制作→最佳发布时间→发布后互动→评论区引流→私信转化话术→数据复盘，详细步骤）"
+}
 
-【4. 账号简介/定位文案】
-请生成2条账号简介（80字内），1条账号定位文案（40字内），1组账号关键词（5-8个）。
+${persona ? '【推广者人设】' + persona : '【推广者人设】副业达人/工具测评博主'}
+${style ? '【账号风格】' + style : '【账号风格】专业干货+亲切分享'}
+【重点推广赛道】${TRACK_DETAILS[track]}`;
 
-【5. 账号SOP】
-请输出每日发布笔记的详细SOP，包括：内容生成、封面图、发布时间、互动引导、评论引流、私信话术、数据追踪等全流程。
-
-【账号定位/赛道】${TRACK_DETAILS[track]}
-${persona ? '【目标用户/人设】' + persona : ''}
-${style ? '【账号风格】' + style : ''}
-
-输出时严格分段，每部分都要有内容，适合直接复制使用。`;
     const result = await callGemini(prompt, true);
-    document.getElementById('profileResultBody').textContent = result;
+    const data = parseNoteJSON(result);
+
+    if (data && data.names) {
+      _profileData = data;
+      await renderProfileCard(data);
+    } else {
+      // fallback
+      document.getElementById('profileResultBody').innerHTML = `<div style="padding:16px;white-space:pre-wrap;line-height:2">${result.replace(/</g,'&lt;').replace(/\n/g,'<br>')}</div>`;
+    }
     document.getElementById('profileResult').classList.add('show');
   } catch (e) {
     showToast('❌ ' + e.message);
   } finally {
     btn.disabled = false;
     setLoading('profileLoading', false);
+  }
+}
+
+async function renderProfileCard(data) {
+  const body = document.getElementById('profileResultBody');
+  // Names
+  const namesHtml = data.names.map(n => `<span class="pc-name" title="${n.reason || ''}">${n.name}</span>`).join('');
+  // Bios
+  const biosHtml = (data.bios || []).map(b => `<div class="pc-bio">${b}</div>`).join('');
+  // Keywords
+  const kwHtml = (data.keywords || []).map(k => `<span class="pc-kw">${k}</span>`).join('');
+
+  body.innerHTML = `<div class="profile-card">
+    <div class="pc-section">
+      <div class="pc-label">📛 推荐账号名</div>
+      <div class="pc-names">${namesHtml}</div>
+    </div>
+    <div class="pc-section">
+      <div class="pc-label">🖼️ AI生成头像</div>
+      <div class="pc-imgs-grid" id="profileAvatars"><div style="text-align:center;padding:16px;color:var(--text3)"><span class="mini-spinner" style="display:inline-block"></span><br>正在生成头像...</div></div>
+    </div>
+    <div class="pc-section">
+      <div class="pc-label">🎨 AI生成背景图</div>
+      <div class="pc-imgs-grid" id="profileBgs"><div style="text-align:center;padding:16px;color:var(--text3)"><span class="mini-spinner" style="display:inline-block"></span><br>正在生成背景图...</div></div>
+    </div>
+    <div class="pc-section">
+      <div class="pc-label">📝 账号简介</div>
+      ${biosHtml}
+      ${data.slogan ? `<div style="margin-top:8px;font-size:15px;font-weight:700;color:var(--primary)">💬 ${data.slogan}</div>` : ''}
+    </div>
+    <div class="pc-section">
+      <div class="pc-label">🏷️ 账号关键词</div>
+      <div class="pc-keywords">${kwHtml}</div>
+    </div>
+    <div class="pc-section">
+      <div class="pc-label">📋 每日运营SOP</div>
+      <div class="pc-sop">${(data.sop || '').replace(/</g,'&lt;').replace(/\n/g,'<br>')}</div>
+    </div>
+  </div>`;
+
+  // Generate avatars
+  if (data.avatarPrompts && data.avatarPrompts.length) {
+    let avHtml = '';
+    for (const p of data.avatarPrompts) {
+      avHtml += `<div>${await tryGenImage(p)}</div>`;
+    }
+    document.getElementById('profileAvatars').innerHTML = avHtml;
+  }
+  // Generate backgrounds
+  if (data.bgPrompts && data.bgPrompts.length) {
+    let bgHtml = '';
+    for (const p of data.bgPrompts) {
+      bgHtml += `<div>${await tryGenImage(p)}</div>`;
+    }
+    document.getElementById('profileBgs').innerHTML = bgHtml;
   }
 }
 // ========== 30天完整内容数据 ==========
@@ -2096,10 +2229,18 @@ function renderPost(d) {
     <div class="tags-area">${p.tags.map(t => `<span class="tag">#${t}</span>`).join('')}</div>
   </div>`;
   
-  // Images
+  // Images — 配图描述 + AI生图
+  const dayImgAreaId = `dayImgArea_${d}`;
   html += `<div class="section">
-    <div class="section-title"><i>📸</i> 配图说明（${p.images.length}张）</div>
+    <div class="section-title"><i>📸</i> 配图（${p.images.length}张）</div>
     <ul class="img-list">${p.images.map((img, i) => `<li>图${i + 1}：${img}</li>`).join('')}</ul>
+    <div class="day-img-area" id="${dayImgAreaId}">
+      <div class="day-img-gen-bar">
+        <button class="copy-btn" onclick="genDayImages(${d})" id="dayImgBtn_${d}" style="background:linear-gradient(135deg,#4285f4,#34a853);color:#fff;border-color:#4285f4;font-weight:600">🖼️ AI生成配图</button>
+        <span class="day-img-status" id="dayImgStatus_${d}">点击按钮用 Gemini 根据上方描述自动生成配图</span>
+      </div>
+      <div class="day-img-grid" id="dayImgGrid_${d}"></div>
+    </div>
   </div>`;
   
   document.getElementById('postBody').innerHTML = html;
