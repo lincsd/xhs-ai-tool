@@ -521,6 +521,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hira
 <script>
 // ===== AI生图（nano banana） =====
 async function genImages() {
+  const _imgKey = getApiKey();
+  if (!_imgKey) { showToast('❌ 请先配置 Gemini API Key（在上方AI面板中粘贴Key并保存）'); return; }
   const prompts = document.getElementById('imgPrompt').value.trim().split(/\n+/).filter(Boolean);
   if (!prompts.length) { showToast('请粘贴图片描述或nano banana提示词'); return; }
   const btn = document.getElementById('imgGenBtn');
@@ -559,7 +561,13 @@ async function tryGenImage(prompt) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       });
-      if (!resp.ok) continue;
+      if (!resp.ok) {
+        const errData = await resp.json().catch(() => ({}));
+        const errMsg = errData?.error?.message || '';
+        if (resp.status === 400 && errMsg.includes('API key')) return `<span style='color:#e65100'>❌ API Key 无效或已被封禁，请更换Key</span>`;
+        if (resp.status === 403) return `<span style='color:#e65100'>❌ API Key 权限不足(403)：${errMsg.slice(0,120)}</span>`;
+        continue;
+      }
       const data = await resp.json();
       // 解析图片数据（inline_data 格式）
       const parts = data?.candidates?.[0]?.content?.parts || [];
