@@ -246,11 +246,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hira
     </div>
     <div class="ai-panel-body" id="aiPanelBody">
       <!-- API Key 配置 -->
-      <div class="key-tip">🔑 AI 功能需要 Gemini API Key（免费）· <a href="https://aistudio.google.com/apikey" target="_blank">点此获取 →</a> · Key 仅保存在你的浏览器中，不会上传</div>
+      <div class="key-tip">🤖 AI 功能通过云端代理调用，无需配置 · 也可<a href="https://aistudio.google.com/apikey" target="_blank">自备 Gemini API Key</a>（优先使用）</div>
       <div class="api-key-bar">
-        <input type="password" id="apiKeyInput" placeholder="粘贴你的 Gemini API Key..." />
+        <input type="password" id="apiKeyInput" placeholder="（可选）粘贴你自己的 Gemini API Key..." />
         <button class="key-save-btn" onclick="saveApiKey()">💾 保存</button>
         <button class="key-save-btn" onclick="toggleKeyVisible()" style="background:#6c757d;padding:8px 10px" title="显示/隐藏Key">👁️</button>
+        <button class="key-save-btn" onclick="clearUserKey()" style="background:#e74c3c;padding:8px 10px" title="清除自备Key，恢复用代理">🗑️</button>
         <span class="key-status" id="keyStatus"></span>
       </div>
       <!-- AI Tabs -->
@@ -521,8 +522,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hira
 <script>
 // ===== AI生图（nano banana） =====
 async function genImages() {
-  const _imgKey = getApiKey();
-  if (!_imgKey) { showToast('❌ 请先配置 Gemini API Key（在上方AI面板中粘贴Key并保存）'); return; }
+  if (!hasApiAccess()) { showToast('❌ 请先配置 Cloudflare 代理 或 在上方AI面板中粘贴 API Key'); return; }
   const prompts = document.getElementById('imgPrompt').value.trim().split(/\n+/).filter(Boolean);
   if (!prompts.length) { showToast('请粘贴图片描述或nano banana提示词'); return; }
   const btn = document.getElementById('imgGenBtn');
@@ -546,21 +546,31 @@ window._genImgData = [];
 async function tryGenImage(prompt) {
   // 优先用 gemini-3.1-flash-image-preview，不行自动降级
   const models = ['gemini-3.1-flash-image-preview', 'gemini-3-pro-image-preview', 'gemini-2.5-flash'];
-  const key = getApiKey();
+  const userKey = getUserApiKey();
   for (let m of models) {
     try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${key}`;
+      let resp;
       const body = {
         contents: [{ parts: [{ text: `Generate an image: ${prompt}` }] }],
         generationConfig: {
           responseModalities: ['IMAGE', 'TEXT']
         }
       };
-      const resp = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
+      if (userKey) {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${userKey}`;
+        resp = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+      } else {
+        body._model = m;
+        resp = await fetch(PROXY_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+      }
       if (!resp.ok) {
         const errData = await resp.json().catch(() => ({}));
         const errMsg = errData?.error?.message || '';
@@ -2201,19 +2211,23 @@ const GEN_TYPE_PROMPTS = {
   trend: '热点结合型笔记：结合当前小红书平台热点话题，自然融入工具推广'
 };
 
-// ===== API Key 管理（混淆内置 + localStorage）=====
+// ===== API Key 管理（后端代理 + 可选用户自备Key）=====
+
+// Cloudflare Worker 代理地址（部署后替换为你的 Worker URL）
+const PROXY_URL = 'https://gemini-proxy.your-worker.workers.dev';
 
 function _encK(k) { try { return btoa(k.split('').reverse().join('')) } catch(e) { return '' } }
 function _decK(s) { try { return atob(s).split('').reverse().join('') } catch(e) { return '' } }
 
-const _k=["Y2xrNVR0U3ZmdA==","QUl6YVN5QXRveQ==","Qnp4SDFTSktF","cTVJSTZDVGtKRA=="];function _dk(){try{return [1,3,0,2].map(i=>atob(_k[i])).join('')}catch(e){return''}}
-
-function getApiKey() {
+function getUserApiKey() {
   const stored = localStorage.getItem('_gk_');
   if (stored) { const k = _decK(stored); if (k && k.startsWith('AIza')) return k; }
-  const builtin = _dk();
-  if (builtin && builtin.startsWith('AIza')) return builtin;
   return '';
+}
+
+// 判断是否有可用 Key（用户自备Key 或 代理可用）
+function hasApiAccess() {
+  return !!(getUserApiKey() || PROXY_URL);
 }
 
 // ===== END KEY =====
@@ -2226,20 +2240,23 @@ function saveApiKey() {
   localStorage.setItem('_gk_', _encK(key));
   input.value = key;
   _updateKeyStatus();
-  showToast('✅ API Key 已安全保存到浏览器');
+  showToast('✅ API Key 已安全保存到浏览器（将优先使用你的Key）');
 }
 
 function _updateKeyStatus() {
-  const key = getApiKey();
+  const userKey = getUserApiKey();
   const el = document.getElementById('keyStatus');
   const input = document.getElementById('apiKeyInput');
-  if (key) {
+  if (userKey) {
     el.className = 'key-status key-ok';
-    el.textContent = '✅ 已配置';
+    el.textContent = '✅ 使用自备Key';
     if (!input.value) input.value = '••••••••••••••••';
+  } else if (PROXY_URL && !PROXY_URL.includes('your-worker')) {
+    el.className = 'key-status key-ok';
+    el.textContent = '✅ 使用云端代理';
   } else {
     el.className = 'key-status key-no';
-    el.textContent = '❌ 未配置';
+    el.textContent = '⚠️ 需配置代理或输入Key';
   }
 }
 
@@ -2248,16 +2265,25 @@ function toggleKeyVisible() {
   input.type = input.type === 'password' ? 'text' : 'password';
 }
 
+function clearUserKey() {
+  localStorage.removeItem('_gk_');
+  document.getElementById('apiKeyInput').value = '';
+  _updateKeyStatus();
+  showToast('✅ 已清除自备Key，恢复使用云端代理');
+}
+
 // 页面加载时恢复状态
 setTimeout(() => { _updateKeyStatus(); }, 100);
 
 async function callGemini(prompt, useSearch = true) {
-  const key = getApiKey();
-  if (!key) { showToast('❌ 请先配置 Gemini API Key'); throw new Error('No API key'); }
+  const userKey = getUserApiKey();
+  if (!userKey && (!PROXY_URL || PROXY_URL.includes('your-worker'))) {
+    showToast('❌ 请先配置 Cloudflare 代理 或 输入 Gemini API Key');
+    throw new Error('No API access');
+  }
 
   // 文本生成用 gemini-2.5-flash
   const model = 'gemini-2.5-flash';
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
 
   const body = {
     contents: [{ parts: [{ text: prompt }] }],
@@ -2272,11 +2298,24 @@ async function callGemini(prompt, useSearch = true) {
     body.tools = [{ google_search: {} }];
   }
 
-  const resp = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
+  let resp;
+  if (userKey) {
+    // 用户自备Key → 直连 Gemini
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${userKey}`;
+    resp = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+  } else {
+    // 走后端代理
+    body._model = model;
+    resp = await fetch(PROXY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+  }
 
   if (!resp.ok) {
     const err = await resp.json().catch(() => ({}));
