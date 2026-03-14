@@ -221,6 +221,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hira
 .key-tip{font-size:12px;color:var(--text3);line-height:1.6;margin-bottom:8px}
 .key-tip a{color:#4285f4;text-decoration:none}
 .key-tip a:hover{text-decoration:underline}
+
+/* ===== XHS Note Card (AI生成笔记预览) ===== */
+.xhs-note-card{background:#fff;border-radius:16px;overflow:hidden;border:1px solid #eee}
+.xhs-note-card .note-title-bar{background:linear-gradient(135deg,var(--primary),#ff6b81);color:#fff;padding:14px 20px;font-size:17px;font-weight:700;line-height:1.5}
+.xhs-note-card .note-body{padding:20px;font-size:14px;line-height:2.1;white-space:pre-wrap;color:var(--text);max-height:400px;overflow-y:auto}
+.xhs-note-card .note-body::-webkit-scrollbar{width:5px}
+.xhs-note-card .note-body::-webkit-scrollbar-thumb{background:#fcc;border-radius:3px}
+.xhs-note-card .note-tags{padding:0 20px 16px;display:flex;flex-wrap:wrap;gap:6px}
+.xhs-note-card .note-tags .tag{background:var(--primary-light);color:var(--primary);padding:4px 12px;border-radius:14px;font-size:12px;font-weight:500}
+.xhs-note-card .note-imgs{padding:0 20px 20px}
+.xhs-note-card .note-imgs-title{font-size:13px;font-weight:600;color:var(--text2);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.xhs-note-card .note-imgs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.xhs-note-card .note-img-item{border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08);position:relative}
+.xhs-note-card .note-img-item img{width:100%;display:block;border-radius:12px}
+.xhs-note-card .note-img-item .img-actions{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.6));padding:8px;display:flex;gap:6px;justify-content:center;opacity:0;transition:.2s}
+.xhs-note-card .note-img-item:hover .img-actions{opacity:1}
+.xhs-note-card .note-img-item .img-actions button{padding:4px 12px;border-radius:6px;border:none;background:rgba(255,255,255,.9);color:#333;font-size:11px;cursor:pointer}
+.xhs-note-card .note-img-generating{text-align:center;padding:24px;color:var(--text3)}
+.xhs-note-card .note-img-generating .mini-spinner{width:28px;height:28px;border:3px solid #fcc;border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px}
+.xhs-note-card .note-img-progress{font-size:12px;color:var(--primary);margin-top:4px}
+.xhs-note-copy-bar{display:flex;gap:8px;flex-wrap:wrap;padding:16px 20px;border-top:1px solid #f0f0f0;background:#fafafa;border-radius:0 0 16px 16px}
+.xhs-note-copy-bar button{padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer;font-size:12px;color:var(--text2);transition:.2s;display:flex;align-items:center;gap:4px}
+.xhs-note-copy-bar button:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-light)}
 </style>
 </head>
 <body>
@@ -372,14 +395,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hira
         <div class="ai-btn-group">
           <button class="ai-btn ai-btn-primary" onclick="geminiGenerate()" id="genBtn">✨ AI 生成推广笔记</button>
           <button class="ai-btn ai-btn-secondary" onclick="geminiGenerateWithSearch()" id="genSearchBtn">🌐 联网热点 + 生成</button>
+          <label style="display:flex;align-items:center;gap:4px;font-size:13px;color:var(--text2);cursor:pointer;margin-left:8px"><input type="checkbox" id="genAutoImg" checked> 自动生成配图</label>
         </div>
-        <div class="ai-loading" id="genLoading"><div class="spinner"></div><p>Gemini 正在联网分析热点并生成内容...</p></div>
+        <div class="ai-loading" id="genLoading"><div class="spinner"></div><p id="genLoadingText">Gemini 正在生成笔记内容...</p></div>
         <div class="ai-result" id="genResult">
-          <div class="ai-result-header">✨ AI 生成的推广笔记 <button class="ai-btn ai-btn-secondary" onclick="copyAIResult('genResult')" style="padding:4px 12px;font-size:12px">📋 复制全部</button></div>
-          <div class="ai-result-body" id="genResultBody"></div>
+          <div class="ai-result-header">✨ AI 生成的小红书笔记 <button class="ai-btn ai-btn-secondary" onclick="copyFullNote()" style="padding:4px 12px;font-size:12px">📋 复制全部文案</button></div>
+          <div class="ai-result-body" id="genResultBody" style="padding:0;background:transparent"></div>
           <div style="padding:12px 16px;border-top:1px solid #e3f2fd;display:flex;gap:8px;flex-wrap:wrap">
-            <button class="ai-btn ai-btn-orange" onclick="applyToToday()" style="font-size:13px;padding:8px 16px">📌 应用到今天的发布内容</button>
+            <button class="ai-btn ai-btn-orange" onclick="applyNoteToToday()" style="font-size:13px;padding:8px 16px">📌 应用到今天的发布内容</button>
             <button class="ai-btn ai-btn-secondary" onclick="geminiGenerate()" style="font-size:13px;padding:8px 16px">🔄 重新生成</button>
+            <button class="ai-btn ai-btn-secondary" onclick="regenNoteImages()" style="font-size:13px;padding:8px 16px" id="regenImgBtn">🖼️ 重新生成配图</button>
           </div>
         </div>
       </div>
@@ -2462,53 +2487,74 @@ async function geminiSearch() {
   }
 }
 
-// ===== 2. AI生成笔记 =====
+// ===== 2. AI生成笔记（小红书图文笔记格式：标题+正文+标签+配图） =====
+let _lastNote = null; // 存储最后生成的笔记数据
+
 async function geminiGenerate(withSearch = false) {
   const genType = document.getElementById('genType').value;
   const genTrack = document.getElementById('genTrack').value;
   const genExtra = document.getElementById('genExtra').value.trim();
+  const autoImg = document.getElementById('genAutoImg').checked;
 
   const btn = document.getElementById('genBtn');
   const btn2 = document.getElementById('genSearchBtn');
   btn.disabled = btn2.disabled = true;
+  document.getElementById('genLoadingText').textContent = '正在生成笔记文案...';
   setLoading('genLoading', true);
   document.getElementById('genResult').classList.remove('show');
 
   try {
-
     const prompt = `${TOOL_CONTEXT}
 
-  请你以小红书顶级运营专家和Gemini大模型的身份，生成一条推广我的AI运营工具的爆款笔记，必须严格分为以下4大部分输出：
+你是小红书顶级运营专家。请为推广「小红书情感账号·运营管理平台」生成一条可以直接发布的小红书图文笔记。
 
-  【1. Gemini大模型的分析与经验】
-  请联网分析2026年小红书平台的推广趋势、爆款规律、平台算法变化，并结合你作为大模型的经验，总结当前最有效的推广方法（不少于3条，带emoji）。
+【笔记类型】${GEN_TYPE_PROMPTS[genType]}
+【重点赛道】${TRACK_DETAILS[genTrack]}
+${genExtra ? '【额外要求】' + genExtra : ''}
+${withSearch ? '请先联网搜索当前小红书的最新热点和爆款趋势，将热点元素自然融入笔记中。' : ''}
 
-  【2. Gemini基于本工具特点的总结】
-  请详细分析本工具的独特功能、适用人群、变现优势、与竞品的差异化亮点，提炼3-5个核心卖点（带emoji）。
+请严格按照以下JSON格式输出，只输出JSON，不要输出其他任何文字：
+{
+  "title": "笔记标题（15-30字，用小红书爆款标题公式，有吸引力）",
+  "content": "笔记正文（600-1000字，小红书风格，分段清晰，多用emoji，用\\n换行。开头3行要有钩子抓住注意力，中间展示产品价值，结尾有互动引导和CTA）",
+  "tags": ["标签1", "标签2", "标签3", "标签4", "标签5"],
+  "imagePrompts": [
+    "封面图的英文描述prompt（要有视觉冲击力，小红书风格，明亮清新，展示工具效果或使用场景）",
+    "第2张配图的英文描述prompt（功能展示、数据对比、或使用场景）",
+    "第3张配图的英文描述prompt（变现效果、用户反馈、或赛道展示）"
+  ]
+}
 
-  【3. 大模型联网分析他人推广方式】
-  请联网搜索小红书上同类AI运营工具的推广案例，归纳他们常用的内容形式、爆款话术、转化策略，并给出2-3个真实案例简述。
-
-  【4. nano banana生图提示与图片描述】
-  请为本工具生成4-6条nano banana AI绘图提示词（prompt），每条描述一张推广用图片，要求覆盖：工具实际效果、功能界面、适用场景、变现路径、用户反馈等。每条都要有详细描述，适合直接用于AI绘图。
-
-  【笔记类型】${GEN_TYPE_PROMPTS[genType]}
-  【重点赛道】${TRACK_DETAILS[genTrack]}
-  ${genExtra ? '【额外要求】' + genExtra : ''}
-  ${withSearch ? '请先联网搜索当前小红书的最新热点和爆款趋势，将热点元素融入笔记中。' : ''}
-
-  请用小红书博主的语气写，亲切自然、有感染力，不要太生硬的广告感。输出时严格分段，且每部分都要有内容。`;
+要求：
+1. 正文要用小红书博主的口吻，亲切自然、有感染力，不要太生硬的广告感
+2. 正文中自然融入产品卖点（AI联网搜索生成内容、7大赛道、智能工具箱、9.9元体验价等）
+3. 配图prompt必须是英文，适合AI绘图模型生成，描述要详细具体
+4. 标签要精准，覆盖目标用户的搜索词`;
 
     let result = await callGemini(prompt, withSearch || genType === 'trend');
-    // 自动分段修正
-    result = fixGenSections(result);
-    // nano banana生图提示优化：高亮显示
-    result = result.replace(/(nano banana[\s\S]*?图片描述[\s\S]*?)(?=\n【|$)/gi, function(m) {
-      return m.replace(/(AI绘图提示词|prompt|图片描述)/gi, '<span style="color:#ff9800;font-weight:bold">$1</span>');
-    });
-    document.getElementById('genResultBody').innerHTML = result.replace(/\n/g,'<br>');
+    
+    // 解析JSON
+    const note = parseNoteJSON(result);
+    if (!note || !note.title || !note.content) {
+      // fallback: 直接显示原始文本
+      document.getElementById('genResultBody').innerHTML = `<div style="padding:16px;white-space:pre-wrap;line-height:2">${result.replace(/</g,'&lt;').replace(/\n/g,'<br>')}</div>`;
+      document.getElementById('genResult').classList.add('show');
+      lastGeneratedContent = result;
+      return;
+    }
+
+    _lastNote = note;
+    lastGeneratedContent = `【标题】\n${note.title}\n\n【正文】\n${note.content}\n\n【标签】\n${note.tags.map(t=>'#'+t).join(' ')}`;
+
+    // 渲染笔记卡片（先不含图片）
+    renderNoteCard(note, autoImg);
     document.getElementById('genResult').classList.add('show');
-    lastGeneratedContent = result;
+
+    // 自动生成配图
+    if (autoImg && note.imagePrompts && note.imagePrompts.length) {
+      await generateNoteImages(note.imagePrompts);
+    }
+
   } catch (e) {
     showToast('❌ ' + e.message);
   } finally {
@@ -2517,50 +2563,120 @@ async function geminiGenerate(withSearch = false) {
   }
 }
 
+function parseNoteJSON(text) {
+  if (!text) return null;
+  let jsonStr = text;
+  // 去除 markdown 代码块
+  const codeBlock = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (codeBlock) jsonStr = codeBlock[1];
+  // 提取 JSON 对象
+  const objMatch = jsonStr.match(/\{[\s\S]*\}/);
+  if (objMatch) jsonStr = objMatch[0];
+  try {
+    const parsed = JSON.parse(jsonStr);
+    // 基本校验
+    if (parsed.title && parsed.content) return parsed;
+    return null;
+  } catch (e) {
+    // 尝试修复常见JSON问题（如换行符未转义）
+    try {
+      const fixed = jsonStr.replace(/\n/g, '\\n').replace(/\t/g, '\\t');
+      const parsed = JSON.parse(fixed);
+      if (parsed.title && parsed.content) return parsed;
+    } catch(e2) {}
+    return null;
+  }
+}
+
+function renderNoteCard(note, showImgLoading = false) {
+  const tagsHtml = (note.tags || []).map(t => `<span class="tag">#${t}</span>`).join('');
+  const contentHtml = note.content.replace(/</g, '&lt;').replace(/\n/g, '<br>');
+  
+  let imgSection = '';
+  if (showImgLoading && note.imagePrompts && note.imagePrompts.length) {
+    imgSection = `<div class="note-imgs"><div class="note-imgs-title">🖼️ AI配图（自动生成中...）</div><div id="noteImgArea"><div class="note-img-generating"><div class="mini-spinner"></div><p>正在用 Gemini 生成配图...</p><p class="note-img-progress" id="imgProgress">准备中 0/${note.imagePrompts.length}</p></div></div></div>`;
+  } else {
+    imgSection = `<div class="note-imgs" id="noteImgArea"></div>`;
+  }
+
+  document.getElementById('genResultBody').innerHTML = `
+    <div class="xhs-note-card">
+      <div class="note-title-bar">📝 ${note.title}</div>
+      <div class="note-body">${contentHtml}</div>
+      <div class="note-tags">${tagsHtml}</div>
+      ${imgSection}
+      <div class="xhs-note-copy-bar">
+        <button onclick="copyNoteTitle()">📋 复制标题</button>
+        <button onclick="copyNoteContent()">📋 复制正文</button>
+        <button onclick="copyNoteTags()">📋 复制标签</button>
+      </div>
+    </div>`;
+}
+
+async function generateNoteImages(prompts) {
+  const area = document.getElementById('noteImgArea');
+  if (!area) return;
+  
+  let imgsHtml = '';
+  for (let i = 0; i < prompts.length; i++) {
+    const prog = document.getElementById('imgProgress');
+    if (prog) prog.textContent = `正在生成第 ${i + 1}/${prompts.length} 张...`;
+    
+    const imgResult = await tryGenImage(prompts[i]);
+    imgsHtml += `<div class="note-img-item">${imgResult}</div>`;
+  }
+  
+  area.innerHTML = `<div class="note-imgs-title">🖼️ AI生成配图</div><div class="note-imgs-grid">${imgsHtml}</div>`;
+}
+
+async function regenNoteImages() {
+  if (!_lastNote || !_lastNote.imagePrompts || !_lastNote.imagePrompts.length) {
+    showToast('没有配图描述可生成'); return;
+  }
+  const area = document.getElementById('noteImgArea');
+  if (area) {
+    area.innerHTML = `<div class="note-imgs-title">🖼️ AI配图（重新生成中...）</div><div class="note-img-generating"><div class="mini-spinner"></div><p>正在用 Gemini 重新生成配图...</p><p class="note-img-progress" id="imgProgress">准备中</p></div>`;
+  }
+  await generateNoteImages(_lastNote.imagePrompts);
+}
+
+function copyNoteTitle() {
+  if (!_lastNote) return;
+  navigator.clipboard.writeText(_lastNote.title).then(() => showToast('✅ 标题已复制'));
+}
+function copyNoteContent() {
+  if (!_lastNote) return;
+  navigator.clipboard.writeText(_lastNote.content).then(() => showToast('✅ 正文已复制'));
+}
+function copyNoteTags() {
+  if (!_lastNote) return;
+  navigator.clipboard.writeText(_lastNote.tags.map(t => '#' + t).join(' ')).then(() => showToast('✅ 标签已复制'));
+}
+function copyFullNote() {
+  if (!_lastNote) { showToast('没有已生成的笔记'); return; }
+  const text = `${_lastNote.title}\n\n${_lastNote.content}\n\n${_lastNote.tags.map(t => '#' + t).join(' ')}`;
+  navigator.clipboard.writeText(text).then(() => showToast('✅ 全部文案已复制'));
+}
+
+function applyNoteToToday() {
+  if (!_lastNote) { showToast('没有可应用的内容'); return; }
+  const override = {
+    title: _lastNote.title,
+    content: _lastNote.content,
+    tags: _lastNote.tags,
+    cover: null,
+  };
+  aiOverrides[currentDay] = override;
+  renderPost(currentDay);
+  showToast('✅ AI 笔记已应用到 Day ' + currentDay);
+}
+
 async function geminiGenerateWithSearch() {
   return geminiGenerate(true);
 }
 
 let lastGeneratedContent = '';
 let lastOptimizedContent = '';
-
-// 自动分段修正函数，确保输出4大部分
-function fixGenSections(text) {
-  if (!text) return '';
-  // 标题正则
-  const sections = [
-    '【1. Gemini大模型的分析与经验】',
-    '【2. Gemini基于本工具特点的总结】',
-    '【3. 大模型联网分析他人推广方式】',
-    '【4. nano banana生图提示与图片描述】'
-  ];
-  // 检查是否都存在
-  let fixed = text;
-  let missing = false;
-  for (let i = 0; i < sections.length; ++i) {
-    if (!fixed.includes(sections[i])) {
-      // 尝试用分段关键词修正
-      const alt = sections[i].replace(/【\d+\. /, '').replace('】', '');
-      const re = new RegExp('^\\s*' + alt.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'm');
-      if (re.test(fixed)) {
-        fixed = fixed.replace(re, '\n' + sections[i] + '\n');
-      } else {
-        // 缺失则补空段
-        missing = true;
-        fixed += `\n\n${sections[i]}\n（本段内容AI未输出，请手动补充）`;
-      }
-    }
-  }
-  // 强制分段顺序
-  let parts = [];
-  for (let i = 0; i < sections.length; ++i) {
-    const start = fixed.indexOf(sections[i]);
-    if (start === -1) { parts.push(sections[i] + '\n（本段内容AI未输出，请手动补充）'); continue; }
-    const end = i < sections.length - 1 ? fixed.indexOf(sections[i + 1]) : fixed.length;
-    parts.push(fixed.substring(start, end).trim());
-  }
-  return parts.join('\n\n');
-}
 
 // ===== 3. 优化当前笔记 =====
 async function geminiOptimize() {
