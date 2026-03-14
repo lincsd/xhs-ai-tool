@@ -2213,8 +2213,8 @@ const GEN_TYPE_PROMPTS = {
 
 // ===== API Key 管理（后端代理 + 可选用户自备Key）=====
 
-// Cloudflare Worker 代理地址（部署后替换为你的 Worker URL）
-const PROXY_URL = 'https://gemini-proxy.your-worker.workers.dev';
+// 后端代理地址（部署到 Render 后替换为你的服务 URL + /api/gemini）
+const PROXY_URL = 'https://your-app.onrender.com/api/gemini';
 
 function _encK(k) { try { return btoa(k.split('').reverse().join('')) } catch(e) { return '' } }
 function _decK(s) { try { return atob(s).split('').reverse().join('') } catch(e) { return '' } }
@@ -2251,7 +2251,7 @@ function _updateKeyStatus() {
     el.className = 'key-status key-ok';
     el.textContent = '✅ 使用自备Key';
     if (!input.value) input.value = '••••••••••••••••';
-  } else if (PROXY_URL && !PROXY_URL.includes('your-worker')) {
+  } else if (PROXY_URL && !PROXY_URL.includes('your-app')) {
     el.className = 'key-status key-ok';
     el.textContent = '✅ 使用云端代理';
   } else {
@@ -2277,8 +2277,8 @@ setTimeout(() => { _updateKeyStatus(); }, 100);
 
 async function callGemini(prompt, useSearch = true) {
   const userKey = getUserApiKey();
-  if (!userKey && (!PROXY_URL || PROXY_URL.includes('your-worker'))) {
-    showToast('❌ 请先配置 Cloudflare 代理 或 输入 Gemini API Key');
+  if (!userKey && (!PROXY_URL || PROXY_URL.includes('your-app'))) {
+    showToast('❌ 请先配置后端代理 或 输入 Gemini API Key');
     throw new Error('No API access');
   }
 
