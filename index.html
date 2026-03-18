@@ -638,18 +638,18 @@ async function tryGenImage(prompt) {
       };
       if (userKey) {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${userKey}`;
-        resp = await fetch(url, {
+        resp = await fetchWithTimeout(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body)
-        });
+        }, 90000);
       } else {
         body._model = m;
-        resp = await fetch(PROXY_URL, {
+        resp = await fetchWithTimeout(PROXY_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body)
-        });
+        }, 90000);
       }
       if (!resp.ok) {
         const errData = await resp.json().catch(() => ({}));
@@ -2626,6 +2626,31 @@ function clearUserKey() {
 // 页面加载时恢复状态
 setTimeout(() => { _updateKeyStatus(); }, 100);
 
+// ===== 网络超时 & Render 唤醒 =====
+async function fetchWithTimeout(url, options, timeoutMs = 120000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const resp = await fetch(url, { ...options, signal: controller.signal });
+    return resp;
+  } catch (e) {
+    if (e.name === 'AbortError') throw new Error('请求超时（' + Math.round(timeoutMs/1000) + '秒），请检查网络后重试');
+    throw e;
+  } finally { clearTimeout(timer); }
+}
+
+// Render 免费版会休眠，提前 ping 唤醒
+let _renderWarm = false;
+function warmUpRender() {
+  if (_renderWarm || !PROXY_URL) return;
+  _renderWarm = true;
+  fetch(PROXY_URL.replace('/api/gemini', '/'), { method: 'GET', mode: 'cors' }).catch(() => {});
+  // 5分钟后重置，允许再次唤醒
+  setTimeout(() => { _renderWarm = false; }, 300000);
+}
+// 页面加载时预唤醒
+setTimeout(warmUpRender, 500);
+
 async function callGemini(prompt, useSearch = true) {
   const userKey = getUserApiKey();
   if (!userKey && (!PROXY_URL || !PROXY_URL.startsWith('https://'))) {
@@ -2651,21 +2676,22 @@ async function callGemini(prompt, useSearch = true) {
 
   let resp;
   if (userKey) {
-    // 用户自备Key → 直连 Gemini
+    // 用户自备Key → 直连 Gemini（120秒超时）
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${userKey}`;
-    resp = await fetch(url, {
+    resp = await fetchWithTimeout(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
-    });
+    }, 120000);
   } else {
-    // 走后端代理
+    // 走后端代理（首次可能需唤醒，给150秒）
+    warmUpRender();
     body._model = model;
-    resp = await fetch(PROXY_URL, {
+    resp = await fetchWithTimeout(PROXY_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
-    });
+    }, 150000);
   }
 
   if (!resp.ok) {
@@ -2692,7 +2718,8 @@ function toggleAIPanel() {
   const icon = document.getElementById('aiToggleIcon');
   body.classList.toggle('open');
   icon.classList.toggle('open');
-  // panel opened
+  // 打开面板时预唤醒 Render 代理
+  if (body.classList.contains('open')) warmUpRender();
 }
 
 function switchAITab(tab) {
@@ -2765,9 +2792,18 @@ async function geminiGenerate(withSearch = false) {
   const btn = document.getElementById('genBtn');
   const btn2 = document.getElementById('genSearchBtn');
   btn.disabled = btn2.disabled = true;
-  document.getElementById('genLoadingText').textContent = '正在生成笔记文案...';
+  warmUpRender(); // 提前唤醒代理
+  const _loadEl = document.getElementById('genLoadingText');
+  _loadEl.textContent = '正在唤醒AI服务并生成笔记文案...';
   setLoading('genLoading', true);
   document.getElementById('genResult').classList.remove('show');
+  // 显示实时计时，让用户知道在工作
+  let _elapsed = 0;
+  const _timer = setInterval(() => {
+    _elapsed++;
+    const tips = _elapsed < 10 ? '（首次可能需30-60秒唤醒服务）' : _elapsed < 30 ? '（AI正在创作中...）' : '（内容较长，请耐心等待）';
+    _loadEl.textContent = `正在生成笔记文案... ${_elapsed}秒 ${tips}`;
+  }, 1000);
 
   try {
     const prompt = `${TOOL_CONTEXT}
@@ -2836,6 +2872,7 @@ ${withSearch ? '\n请先联网搜索当前小红书的最新热点和爆款趋�
   } catch (e) {
     showToast('❌ ' + e.message);
   } finally {
+    clearInterval(_timer);
     btn.disabled = btn2.disabled = false;
     setLoading('genLoading', false);
   }
