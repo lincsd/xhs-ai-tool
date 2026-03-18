@@ -622,8 +622,8 @@ async function genImages() {
 window._genImgData = [];
 
 async function tryGenImage(prompt) {
-  // 优先用 gemini-3.1-flash-image-preview，不行自动降级
-  const models = ['gemini-3.1-flash-image-preview', 'gemini-3-pro-image-preview', 'gemini-2.5-flash'];
+  // 优先用 gemini-3.1-flash-image-preview，不行自动降级（只用支持图片生成的模型）
+  const models = ['gemini-3.1-flash-image-preview', 'gemini-3-pro-image-preview', 'gemini-2.0-flash-preview-image-generation'];
   const userKey = getUserApiKey();
   // 增强提示词：强调生成产品功能介绍风格的图片
   const enhancedPrompt = `Generate a product feature showcase image for a social media management AI platform called "XHS Emotion Platform". The image should look like a professional tech product promotional graphic or UI dashboard illustration. Style: modern, clean, colorful, flat design, professional infographic. NO real photos of people. The specific content to show: ${prompt}`;
